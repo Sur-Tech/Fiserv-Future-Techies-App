@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home Finance AI Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="main-header">
+            <h1 class="logo">Home Finance AI</h1>
+            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
+        </div>
+        <nav class="nav-tabs">
+            <ul>
+                <li onclick="scrollToSection('features')">Features</li>
+                <li onclick="scrollToSection('workflows')">Workflows</li>
+                <li onclick="scrollToSection('tech')">Tech Stack</li>
+                <li onclick="scrollToSection('contact')">Contact</li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Your Smart Family CFO</h2>
+            <p>Automate bills, budgets, groceries, reminders, and more. One agent to manage your entire household finance workflow.</p>
+            <div class="hero-buttons">
+                <button class="btn-primary">Get Started</button>
+                <button class="btn-secondary">Learn More</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="finance-illustration.png" alt="Home Finance AI Illustration">
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <h2 class="section-title">Core Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Bill Payment Agent</h3>
+                <p>Automatically reads invoices, tracks due dates, triggers payments, and updates your dashboard.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Grocery Agent</h3>
+                <p>Tracks frequently purchased items, finds best prices, and creates shopping lists or auto-orders.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Expense & Budget Agent</h3>
+                <p>Categorizes expenses, detects anomalies, predicts future spending, and provides reports.</p>
+            </div>
+            <div class="feature-card">
+                <h3>School Payments Agent</h3>
+                <p>Tracks school fees, activities, uniforms, and sends reminders.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Example Workflows -->
+    <section id="workflows" class="workflows">
+        <h2 class="section-title">Example Workflows</h2>
+        <div class="workflow-cards">
+            <div class="workflow-card">
+                <h3>Paying a Bill</h3>
+                <p>Upload PDF → Vision Agent extracts info → Payment Agent triggers payment → Logs expense → Updates dashboard</p>
+            </div>
+            <div class="workflow-card">
+                <h3>Grocery Shopping</h3>
+                <p>Voice command → Inventory updated → Best price selected → Cart approved → Auto-purchase → Expense logged</p>
+            </div>
+            <div class="workflow-card">
+                <h3>Monthly Summary</h3>
+                <p>Auto-generated reports of spending, projections, bills, grocery patterns, and savings recommendations.</p>
+            </div>
+        </div>
+    </section>
+
+    </section>
+
+    <!-- Call to Action -->
+    <section id="contact" class="cta">
+        <h2>Ready to Automate Your Household Finances?</h2>
+        <p>Contact us to learn more or start building your smart Home Finance Assistant today.</p>
+        <button class="btn-primary">Get Started</button>
+    </section>
+</body>
+
+</html>
