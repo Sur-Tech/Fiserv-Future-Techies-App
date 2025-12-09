@@ -1,0 +1,134 @@
+/* ==== Variables ==== */
+
+:root {
+    --bg: #f3f4f6;
+    --text: #1f2937;
+    --header-bg: #14b8a6;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --btn-primary: #14b8a6;
+    --btn-primary-text: #fff;
+    --btn-secondary-bg: rgba(20, 184, 166, 0.1);
+}
+
+body.dark-mode {
+    --bg: #121212;
+    --text: #e0e0e0;
+    --header-bg: #1f1f1f;
+    --card-bg: rgba(30, 30, 30, 0.85);
+    --btn-primary: #2c5530;
+    --btn-primary-text: #fff;
+    --btn-secondary-bg: rgba(44, 85, 48, 0.2);
+}
+
+body {
+    font-family: 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: var(--header-bg);
+    color: var(--btn-primary-text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.nav-tabs ul {
+    display: flex;
+    gap: 20px;
+    list-style: none;
+}
+
+.nav-tabs li {
+    cursor: pointer;
+}
+
+section {
+    padding: 60px 20px;
+}
+
+.hero {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.hero-content h2 {
+    font-size: 2.5rem;
+}
+
+.hero-content p {
+    margin: 20px 0;
+    font-size: 1.2rem;
+}
+
+.hero-buttons button {
+    margin-right: 10px;
+}
+
+.btn-primary {
+    background: var(--btn-primary);
+    color: var(--btn-primary-text);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-secondary {
+    background: var(--btn-secondary-bg);
+    color: var(--text);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.features-grid,
+.workflow-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.feature-card,
+.workflow-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 40px;
+}
+
+.cta {
+    text-align: center;
+}
+
+.hero-image img {
+    max-width: 400px;
+    width: 100%;
+}
+
+
+/* Responsive */
+
+@media(max-width:800px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+    .hero-image {
+        margin: 0 auto;
+    }
+}
