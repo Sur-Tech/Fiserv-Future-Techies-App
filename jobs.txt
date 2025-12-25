@@ -1,0 +1,19 @@
+Vish
+- Do the majority of the frontend
+- Includes majority of all html, css, and js files
+- Finalize spending packages
+
+Surya
+- Help Vish with frontend
+- Help Samik with backend 
+- Includes all files
+- Make the Supabase tables, etc
+
+Samik
+- Write 3/4 the backend code
+- Includes half of the python and java files with additional other language files applying
+
+Naman(If he is joining)
+- Write 1/4 of the backend code
+- Help Surya set up Supabase
+- Find sponsors for our app(ads) and start marketing our app
