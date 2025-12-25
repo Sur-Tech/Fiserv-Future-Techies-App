@@ -1,53 +1,44 @@
-// Dark Mode Toggle
-const darkModeToggle = document.getElementById("darkModeToggle");
+<!DOCTYPE html>
+<html lang="en">
 
-darkModeToggle.addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-    darkModeToggle.textContent =
-        document.body.classList.contains("dark-mode") ?
-        "☀️ Light Mode" :
-        "🌙 Dark Mode";
-});
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>School - Home Finance AI</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
 
-// Scroll to section function
-function scrollToSection(id) {
-    const section = document.getElementById(id);
-    if (section) {
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-}
+<body>
 
-// Routing File
-function loadPage(page) {
-    const main = document.querySelector("main");
+    <header class="header">
+        <div class="main-header">
+            <h1 class="logo">Home Finance AI</h1>
+            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
+        </div>
 
-    const routes = {
-        "home": "index.html",
-        "soil-ai": "soil-ai.html",
-        "common-plants": "common-plants.html"
-    };
+        <nav class="nav-tabs">
+            <ul>
+                <li><a href="banks.html" class="nav-btn">Banks</a></li>
+                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
+                <li><a href="school.html" class="nav-btn">School</a></li>
+                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
+                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
+                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
+                <li><a href="contact.html" class="nav-btn">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    const target = routes[page];
-    if (!target) {
-        main.innerHTML = "<h1>404 Not Found</h1><p>The requested page was not found.</p>";
-        return;
-    }
+    <main>
+        <section class="feature-page">
+            <h2>School</h2>
+            <p>
+                Manage school-related payments, fees, uniforms, and activity reminders efficiently.
+            </p>
+        </section>
+    </main>
 
-    fetch(target)
-        .then((response) => response.text())
-        .then((html) => {
-            // Try to extract just the <main> content if a full HTML doc was fetched
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, "text/html");
-            const innerMain = doc.querySelector("main");
-            main.innerHTML = innerMain ? innerMain.innerHTML : html;
-            // If this is the Soil AI page, initialize its UI
-            if (page === 'soil-ai' && typeof window.initializePlantIdUI === 'function') {
-                window.initializePlantIdUI();
-            }
-        })
-        .catch((error) => {
-            console.error("Error loading page:", error);
-            main.innerHTML = "<h1>Error</h1><p>Could not load the page.</p>";
-        });
-}
+</body>
+
+</html>
