@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from plaid.api import plaid_api
 from plaid.configuration import Configuration 
@@ -7,6 +8,13 @@ from plaid.model import *
 
 # Initialize Flask
 app = Flask(__name__)
+
+# Load Plaid credentials
+PLAID_CLIENT_ID = os.getenv("694d8b12168aa50020a89154")
+PLAID_SECRET = os.getenv("50c7c2d1d7ce151033bd8ffa40f7b7")
+
+if not PLAID_CLIENT_ID or not PLAID_SECRET:
+    raise Exception("Plaid environment variables not set")
 
 # Initialize Plaid
 configuration = Configuration(
