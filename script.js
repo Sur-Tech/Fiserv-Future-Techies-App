@@ -1,44 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
+function loadPage(page) {
+    const main = document.querySelector("main");
+    if (!main) return;
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>School - Home Finance AI</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
-</head>
+    const routes = {
+        home: "index.html",
+        banks: "banks.html",
+        groceries: "groceries.html",
+        school: "school.html",
+        "spending-analyzer": "spending-analyzer.html",
+        utilities: "utilities.html",
+        work: "work.html"
+    };
 
-<body>
+    const target = routes[page];
+    if (!target) {
+        main.innerHTML = "<h1>404</h1><p>Page not found.</p>";
+        return;
+    }
 
-    <header class="header">
-        <div class="main-header">
-            <h1 class="logo">Home Finance AI</h1>
-            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
-        </div>
-
-        <nav class="nav-tabs">
-            <ul>
-                <li><a href="banks.html" class="nav-btn">Banks</a></li>
-                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
-                <li><a href="school.html" class="nav-btn">School</a></li>
-                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
-                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
-                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
-                <li><a href="contact.html" class="nav-btn">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <section class="feature-page">
-            <h2>School</h2>
-            <p>
-                Manage school-related payments, fees, uniforms, and activity reminders efficiently.
-            </p>
-        </section>
-    </main>
-
-</body>
-
-</html>
+    fetch(target)
+        .then(res => {
+            if (!res.ok) throw new Error("Fetch failed");
+            return res.text();
+        })
+        .then(html => {
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const innerMain = doc.querySelector("main");
+            main.innerHTML = innerMain ? innerMain.innerHTML : html;
+        })
+        .catch(err => {
+            console.error(err);
+            main.innerHTML = "<h1>Error</h1><p>Could not load page.</p>";
+        });
+}
