@@ -1,0 +1,46 @@
+ .centertabs {
+     display: flex;
+     flex-wrap: nowrap;
+     flex: 2;
+     justify-content: center;
+     align-items: center;
+     text-align: center;
+     margin-right: 250px;
+     font-size: medium;
+     margin-top: 30px;
+     background-color: #0A3D62;
+     /* orange */
+ }
+ 
+ .other_tabs1 {
+     color: #FAFAFA;
+     /* white */
+     font-size: 25px;
+     font-family: Times New Roman, Sans-Serif;
+     margin-top: -35px;
+     padding: 5px;
+     list-style-type: none;
+     display: flex;
+     flex-wrap: nowrap;
+     justify-content: center;
+     align-items: center;
+     text-align: center;
+     gap: 40px;
+     cursor: pointer;
+     user-select: none;
+     background-color: #0A3D62;
+     /* orange */
+     border-radius: 12px;
+     transition: background-color 0.3s ease;
+ }
+ /* Styles for tabs on nav bar */
+ 
+ .tab {
+     margin-left: 20px;
+     margin-right: 20px;
+     text-wrap: nowrap;
+     padding: 10px;
+     border-radius: 8px;
+     transition: background-color 0.3s ease;
+     color: #FAFAFA
+ }
