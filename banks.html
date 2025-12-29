@@ -1,45 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Banks - Home Finance AI</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
-</head>
-
-<body>
-
-    <header class="header">
-        <div class="main-header">
-            <h1 class="logo">Home Finance AI</h1>
-            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
-        </div>
-
-        <nav class="nav-tabs">
-            <ul>
-                <li><a href="banks.html" class="nav-btn">Banks</a></li>
-                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
-                <li><a href="school.html" class="nav-btn">School</a></li>
-                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
-                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
-                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
-                <li><a href="contact.html" class="nav-btn">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main>
-        <section class="feature-page">
-            <h2>Banks</h2>
-            <p>
-                Here you can manage your bank accounts, track balances, view transactions, and make transfers.
+<!-- banks.html: Banks page content -->
+<header class="header">
+    <div class="main-header">
+        <h2 class="topheader">
+            <a class="logo" href="index.html">Fiserv CFO</a>
+        </h2>
+    </div>
+    <nav class="centertabs">
+        <ul class="other_tabs1">
+            <li class="tab" data-page="banks">Banks</li>
+            <li class="tab" data-page="groceries">Groceries</li>
+            <li class="tab" data-page="school">School</li>
+            <li class="tab" data-page="spending-analyzer">Spending Analyzer</li>
+            <li class="tab" data-page="utilities">Utilities</li>
+            <li class="tab" data-page="work">Work</li>
+        </ul>
+    </nav>
+    <section class="hero-banner">
+        <div class="hero-content">
+            <div class="hero-badge">Banks Dashboard</div>
+            <h1 class="hero-main-title">Manage Your Banks</h1>
+            <p class="hero-tagline">
+                Track balances, view transactions, and manage your accounts across multiple banks.
             </p>
-            <!-- Add more details / dashboard features here -->
-        </section>
-    </main>
+            <p class="hero-description">
+                Connect your accounts with Chase, JP Morgan, and PNC to get a unified view of your finances.
+            </p>
+        </div>
+        <div class="hero-visual">
+            <img src="https://cdn.pixabay.com/photo/2017/08/10/03/47/bank-2618580_640.png" alt="Banks Image" class="hero-img">
+        </div>
+    </section>
 
-</body>
+    <section class="features-section">
+        <h2 class="feature-title">Supported Banks</h2>
+        <div class="features-grid">
+            <!-- Chase Bank Card -->
+            <div class="feature-box">
+                <div class="feature-icon">🏦</div>
+                <h3 class="feature-box-title">Chase Bank</h3>
+                <p class="feature-box-text">
+                    Access checking and savings accounts, credit cards, and investment services.
+                </p>
+                <div class="feature-tech">
+                    <span class="tech-badge">Checking</span>
+                    <span class="tech-badge">Savings</span>
+                    <span class="tech-badge">Investments</span>
+                </div>
+                <button class="btn-primary btn-hero" data-page="chase">Go to Chase</button>
+            </div>
 
-</html>
+            <!-- JP Morgan Card -->
+            <div class="feature-box">
+                <div class="feature-icon">💰</div>
+                <h3 class="feature-box-title">JP Morgan</h3>
+                <p class="feature-box-text">
+                    Offers comprehensive banking services for personal and business accounts, including loans and wealth management.
+                </p>
+                <div class="feature-tech">
+                    <span class="tech-badge">Loans</span>
+                    <span class="tech-badge">Credit</span>
+                    <span class="t
