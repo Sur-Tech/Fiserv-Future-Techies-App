@@ -31,12 +31,77 @@
     </header>
 
     <main>
-        <section class="feature-page">
-            <h2>Spending Analyzer</h2>
-            <p>
-                Analyze household spending patterns, categorize expenses, detect anomalies, and generate predictive reports.
-            </p>
-        </section>
+       <section class="feature-page">
+    <h2>Spending Analyzer</h2>
+    <p>
+        Analyze household spending patterns, categorize expenses, detect anomalies, and generate predictive reports.
+    </p>
+
+    <!-- ── Plaid Connect ── -->
+    <div id="plaid-section" style="margin: 24px 0;">
+        <button class="btn-primary" id="connect-btn" onclick="startPlaidLink()">
+            🏦 Connect Bank via Plaid
+        </button>
+        <span id="connect-status" style="margin-left:12px; font-size:14px; color:#888;"></span>
+    </div>
+
+    <!-- ── Days filter ── -->
+    <div id="filter-section" style="display:none; margin-bottom:16px;">
+        <label style="font-size:14px;">Show last:&nbsp;</label>
+        <button class="btn-primary" onclick="loadTransactions(7)"  style="margin:2px;">7 days</button>
+        <button class="btn-primary" onclick="loadTransactions(30)" style="margin:2px;">30 days</button>
+        <button class="btn-primary" onclick="loadTransactions(60)" style="margin:2px;">60 days</button>
+        <button class="btn-primary" onclick="loadTransactions(90)" style="margin:2px;">90 days</button>
+    </div>
+
+    <!-- ── Summary cards ── -->
+    <div id="summary-cards" style="display:none; display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
+        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
+            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Total Spent</div>
+            <div id="card-spent" style="font-size:28px; font-weight:700; color:#f43f5e; margin:8px 0;">—</div>
+        </div>
+        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
+            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Avg/Day</div>
+            <div id="card-avg" style="font-size:28px; font-weight:700; color:#0ea5e9; margin:8px 0;">—</div>
+        </div>
+        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
+            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Top Category</div>
+            <div id="card-cat" style="font-size:20px; font-weight:700; color:#a78bfa; margin:8px 0;">—</div>
+        </div>
+        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
+            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Transactions</div>
+            <div id="card-count" style="font-size:28px; font-weight:700; color:#22c55e; margin:8px 0;">—</div>
+        </div>
+    </div>
+
+    <!-- ── Spending bars ── -->
+    <div id="breakdown-section" style="display:none; margin-bottom:24px;">
+        <h3>Spending by Category</h3>
+        <div id="breakdown-bars"></div>
+    </div>
+
+    <!-- ── Recommendations ── -->
+    <div id="recs-section" style="display:none; margin-bottom:24px;">
+        <h3>💡 AI Recommendations</h3>
+        <div id="recs-list"></div>
+    </div>
+
+    <!-- ── Transactions table ── -->
+    <div id="tx-section" style="display:none;">
+        <h3>Recent Transactions <span id="tx-total" style="font-size:13px; color:#888; font-weight:400;"></span></h3>
+        <div id="tx-list"></div>
+        <button id="load-more-btn" class="btn-primary" style="display:none; margin-top:12px; width:100%;"
+                onclick="loadMore()">Load More</button>
+    </div>
+
+    <!-- ── Error box ── -->
+    <div id="error-box" style="display:none; background:#450a0a; border:1px solid #7f1d1d;
+         border-radius:8px; padding:12px 16px; color:#fca5a5; margin-top:16px; font-size:14px;"></div>
+</section>
+
+<!-- Plaid Link JS (loads from CDN) -->
+<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<script src="plaid.js"></script>
     </main>
 
 </body>
