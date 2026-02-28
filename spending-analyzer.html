@@ -94,6 +94,34 @@
                 onclick="loadMore()">Load More</button>
     </div>
 
+    <!-- ── Recurring Transactions ── -->
+    <div id="recurring-section" style="display:none; margin-bottom:24px;">
+        <h3>🔁 Recurring Transactions</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:8px;">Merchants that appear in 2+ months — possible subscriptions or habits.</p>
+        <div id="recurring-list" style="border:1px solid #1e293b;border-radius:8px;overflow:hidden;"></div>
+    </div>
+
+    <!-- ── Anomalies ── -->
+    <div id="anomalies-section" style="display:none; margin-bottom:24px;">
+        <h3>⚠️ Spending Anomalies</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:8px;">Transactions that are more than 2× the average for their category.</p>
+        <div id="anomalies-list" style="border:1px solid #1e293b;border-radius:8px;overflow:hidden;"></div>
+    </div>
+
+    <!-- ── AI Chat ── -->
+    <div id="chat-section" style="display:none; margin-bottom:24px;">
+        <h3>💬 Ask CashLens AI</h3>
+        <div id="chat-output"
+             style="min-height:80px;max-height:300px;overflow-y:auto;background:#0f172a;
+                    border:1px solid #1e293b;border-radius:8px;padding:12px;margin-bottom:8px;"></div>
+        <div style="display:flex;gap:8px;">
+            <input id="chat-input" type="text" placeholder="e.g. Where am I overspending?"
+                   style="flex:1;padding:8px 12px;background:#1e293b;border:1px solid #334155;
+                          border-radius:8px;color:#f8fafc;font-size:13px;outline:none;" />
+            <button class="btn-primary" onclick="sendChat()">Send</button>
+        </div>
+    </div>
+
     <!-- ── Error box ── -->
     <div id="error-box" style="display:none; background:#450a0a; border:1px solid #7f1d1d;
          border-radius:8px; padding:12px 16px; color:#fca5a5; margin-top:16px; font-size:14px;"></div>
@@ -102,6 +130,17 @@
 <!-- Plaid Link JS (loads from CDN) -->
 <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 <script src="plaid.js"></script>
+<script>
+  // Show chat section once bank is connected
+  const _origExchange = window.exchangeToken;
+  document.addEventListener("DOMContentLoaded", () => {
+    const origLoad = window.loadTransactions;
+    window.loadTransactions = function(days) {
+      document.getElementById("chat-section").style.display = "";
+      return origLoad(days);
+    };
+  });
+</script>
     </main>
 
 </body>

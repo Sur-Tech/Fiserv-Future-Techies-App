@@ -133,11 +133,11 @@ def get_user_id():
 
 
 def _error(status, message, **extra):
-    return jsonify({"success": False, "error": message, **extra}), status
+    return jsonify({"success": False, "data": None, "error": message, **extra}), status
 
 
 def _ok(**data):
-    return jsonify({"success": True, **data})
+    return jsonify({"success": True, "data": data, "error": None})
 
 
 @app.before_request
@@ -460,6 +460,85 @@ def calculate_stats(transactions):
     }
 
 
+def detect_recurring_transactions(transactions):
+    """Group by merchant; flag those that appear across 2+ calendar months."""
+    from collections import defaultdict
+    merchant_txs = defaultdict(list)
+    for tx in transactions:
+        name = (tx.get("merchant_name") or tx.get("name") or "").strip()
+        # Normalise: lowercase, strip trailing digits/symbols (e.g. "AMAZON #1234" → "amazon")
+        key = re.sub(r'[\s\d#*]+$', '', name.lower()).strip()
+        if key:
+            merchant_txs[key].append(tx)
+
+    recurring = []
+    for key, txs in merchant_txs.items():
+        if len(txs) < 2:
+            continue
+        months = set()
+        for tx in txs:
+            date_str = str(tx.get("date", ""))
+            if len(date_str) >= 7:
+                months.add(date_str[:7])
+        if len(months) < 2:
+            continue
+        amounts = [float(tx.get("amount", 0)) for tx in txs if float(tx.get("amount", 0)) > 0]
+        if not amounts:
+            continue
+        avg_amount = sum(amounts) / len(amounts)
+        raw_cat = txs[0].get("category")
+        category = (raw_cat[0] if isinstance(raw_cat, list) and raw_cat
+                    else str(raw_cat) if raw_cat else "Other")
+        amount_variance = max(abs(a - avg_amount) for a in amounts) / avg_amount if avg_amount else 1
+        recurring.append({
+            "merchant":        txs[0].get("merchant_name") or txs[0].get("name") or key,
+            "count":           len(txs),
+            "months_seen":     sorted(months),
+            "avg_amount":      round(avg_amount, 2),
+            "total":           round(sum(amounts), 2),
+            "category":        category,
+            "is_subscription": amount_variance < 0.05,  # same amount every time = subscription
+        })
+
+    recurring.sort(key=lambda x: x["total"], reverse=True)
+    return recurring
+
+
+def detect_anomalies(transactions, threshold=2.0):
+    """Flag transactions where amount > threshold × category average."""
+    from collections import defaultdict
+    cat_groups = defaultdict(list)
+    for tx in transactions:
+        amount = float(tx.get("amount", 0))
+        if amount <= 0:
+            continue
+        raw_cat = tx.get("category")
+        cat = (raw_cat[0] if isinstance(raw_cat, list) and raw_cat
+               else str(raw_cat) if raw_cat else "Other")
+        cat_groups[cat].append((amount, tx))
+
+    anomalies = []
+    for cat, items in cat_groups.items():
+        avg = sum(a for a, _ in items) / len(items)
+        if avg <= 0:
+            continue
+        for amount, tx in items:
+            if amount > threshold * avg:
+                anomalies.append({
+                    "transaction_id": tx.get("transaction_id"),
+                    "merchant":       tx.get("merchant_name") or tx.get("name") or "Unknown",
+                    "amount":         round(amount, 2),
+                    "category":       cat,
+                    "date":           tx.get("date"),
+                    "category_avg":   round(avg, 2),
+                    "ratio":          round(amount / avg, 1),
+                    "flag":           f"${amount:.2f} is {round(amount/avg,1)}x the ${avg:.2f} average for {cat}",
+                })
+
+    anomalies.sort(key=lambda x: x["ratio"], reverse=True)
+    return anomalies
+
+
 def gemini_generate(prompt):
     if not gemini_model:
         return "AI unavailable -- set GEMINI_API_KEY in your .env file."
@@ -661,8 +740,9 @@ def home():
                simulation_mode=SIMULATION_MODE,
                endpoints=[
                    "POST /create_link_token","POST /exchange_token","GET /accounts",
-                   "GET /transactions","GET /report","GET /alert","POST /budgets/auto",
-                   "POST /budgets/set","GET /budgets","POST /chat","GET /history",
+                   "GET /transactions","GET /report","GET /alert","GET /recurring",
+                   "GET /anomalies","POST /budgets/auto","POST /budgets/set",
+                   "GET /budgets","POST /chat","GET /history",
                    "POST /simulate","POST /reset","GET /health"])
 
 
@@ -888,6 +968,34 @@ def get_history():
     if err: return _error(400, err)
     history = load_report_history(user_id, limit=limit)
     return _ok(history=history, count=len(history))
+
+
+@app.route("/recurring", methods=["GET"])
+@require_auth
+def get_recurring():
+    user_id      = get_user_id()
+    access_token, _ = load_token(user_id)
+    days, err = validate_int_param(request.args.get("days"), 90, 1, 730)
+    if err: return _error(400, err)
+    all_tx, err_resp = _resolve_transactions(user_id, access_token, days)
+    if err_resp: return err_resp
+    recurring = detect_recurring_transactions(all_tx)
+    return _ok(recurring=recurring, count=len(recurring), period_days=days)
+
+
+@app.route("/anomalies", methods=["GET"])
+@require_auth
+def get_anomalies():
+    user_id      = get_user_id()
+    access_token, _ = load_token(user_id)
+    days, err = validate_int_param(request.args.get("days"), 30, 1, 730)
+    if err: return _error(400, err)
+    threshold, err = validate_int_param(request.args.get("threshold"), 2, 1, 10)
+    if err: return _error(400, err)
+    all_tx, err_resp = _resolve_transactions(user_id, access_token, days)
+    if err_resp: return err_resp
+    anomalies = detect_anomalies(all_tx, threshold=float(threshold))
+    return _ok(anomalies=anomalies, count=len(anomalies), period_days=days, threshold=threshold)
 
 
 @app.route("/simulate", methods=["POST"])
