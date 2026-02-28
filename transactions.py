@@ -607,8 +607,8 @@ def _fetch_all_transactions(access_token, days):
                 options=TransactionsGetRequestOptions(count=500, offset=0),
             )
         )
-        all_tx = list(first_resp["transactions"])
-        total  = first_resp["total_transactions"]
+        all_tx = list(first_resp.transactions)
+        total  = first_resp.total_transactions
         while len(all_tx) < total:
             resp = plaid_client.transactions_get(
                 TransactionsGetRequest(
@@ -616,11 +616,11 @@ def _fetch_all_transactions(access_token, days):
                     options=TransactionsGetRequestOptions(count=500, offset=len(all_tx)),
                 )
             )
-            fetched = list(resp["transactions"])
+            fetched = list(resp.transactions)
             if not fetched:
                 break
             all_tx.extend(fetched)
-        return [dict(tx) for tx in all_tx]
+        return [tx.to_dict() for tx in all_tx]
     except ApiException as e:
         return handle_plaid_exception(e)
     except Exception:
@@ -669,7 +669,7 @@ def create_link_token():
             language="en",
         )
         response = plaid_client.link_token_create(req)
-        return jsonify({"success": True, "link_token": response["link_token"]})
+        return jsonify({"success": True, "link_token": response.link_token})
     except ApiException as e:
         return handle_plaid_exception(e)
     except Exception:
@@ -691,7 +691,7 @@ def exchange_token():
         response = plaid_client.item_public_token_exchange(
             ItemPublicTokenExchangeRequest(public_token=public_token)
         )
-        save_token(user_id, response["access_token"], response["item_id"])
+        save_token(user_id, response.access_token, response.item_id)
         return jsonify({"success": True, "message": "Bank connected successfully"})
     except ApiException as e:
         return handle_plaid_exception(e)
@@ -711,7 +711,7 @@ def get_accounts():
         return jsonify({"success": False, "error": "Bank not connected"}), 400
     try:
         response = plaid_client.accounts_get(AccountsGetRequest(access_token=access_token))
-        return jsonify({"success": True, "accounts": [dict(a) for a in response["accounts"]]})
+        return jsonify({"success": True, "accounts": [a.to_dict() for a in response.accounts]})
     except ApiException as e:
         return handle_plaid_exception(e)
     except Exception:
