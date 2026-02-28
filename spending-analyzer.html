@@ -4,145 +4,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Spending Analyzer - Home Finance AI</title>
+    <title>CashLens AI — Spending Analyzer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="spending-analyzer.css">
+    <!-- Plaid Link SDK must be in <head> so it's available before plaid.js runs -->
+    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 </head>
 
 <body>
 
+    <!-- ── Header (matches main app) ── -->
     <header class="header">
         <div class="main-header">
-            <h1 class="logo">Home Finance AI</h1>
-            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
+            <h2 class="topheader">
+                <a class="logo" href="index.html">Fiserv CFO</a>
+            </h2>
         </div>
-
-        <nav class="nav-tabs">
-            <ul>
-                <li><a href="banks.html" class="nav-btn">Banks</a></li>
-                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
-                <li><a href="school.html" class="nav-btn">School</a></li>
-                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
-                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
-                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
-                <li><a href="contact.html" class="nav-btn">Contact</a></li>
+        <nav class="centertabs">
+            <ul class="other_tabs1">
+                <li class="tab" onclick="window.location='banks.html'">Banks</li>
+                <li class="tab" onclick="window.location='groceries.html'">Groceries</li>
+                <li class="tab" onclick="window.location='school.html'">School</li>
+                <li class="tab active" onclick="window.location='spending-analyzer.html'">Spending Analyzer</li>
+                <li class="tab" onclick="window.location='utilities.html'">Utilities</li>
+                <li class="tab" onclick="window.location='work.html'">Work</li>
             </ul>
         </nav>
     </header>
 
-    <main>
-       <section class="feature-page">
-    <h2>Spending Analyzer</h2>
-    <p>
-        Analyze household spending patterns, categorize expenses, detect anomalies, and generate predictive reports.
-    </p>
+    <main class="sa-main">
 
-    <!-- ── Plaid Connect ── -->
-    <div id="plaid-section" style="margin: 24px 0;">
-        <button class="btn-primary" id="connect-btn" onclick="startPlaidLink()">
-            🏦 Connect Bank via Plaid
-        </button>
-        <span id="connect-status" style="margin-left:12px; font-size:14px; color:#888;"></span>
-    </div>
+        <!-- ── Hero / Connect Section ── -->
+        <section class="sa-hero">
+            <div class="sa-badge">AI-Powered &nbsp;·&nbsp; Plaid Secured</div>
+            <h1 class="sa-title">CashLens AI</h1>
+            <p class="sa-subtitle">Real-time spending insights powered by your actual bank data</p>
 
-    <!-- ── Days filter ── -->
-    <div id="filter-section" style="display:none; margin-bottom:16px;">
-        <label style="font-size:14px;">Show last:&nbsp;</label>
-        <button class="btn-primary" onclick="loadTransactions(7)"  style="margin:2px;">7 days</button>
-        <button class="btn-primary" onclick="loadTransactions(30)" style="margin:2px;">30 days</button>
-        <button class="btn-primary" onclick="loadTransactions(60)" style="margin:2px;">60 days</button>
-        <button class="btn-primary" onclick="loadTransactions(90)" style="margin:2px;">90 days</button>
-    </div>
+            <!-- Connect Card (hidden after bank connected) -->
+            <div id="connect-area" class="sa-connect-area">
+                <div class="sa-connect-card">
+                    <span class="sa-connect-icon">🏦</span>
+                    <h2 class="sa-connect-title">Connect Your Bank Account</h2>
+                    <p class="sa-connect-desc">
+                        Securely link your bank via Plaid to get AI-powered spending analysis,
+                        subscription detection, anomaly alerts, and personalised recommendations.
+                    </p>
+                    <div class="sa-security-badges">
+                        <span class="sa-sec-badge">🔒 256-bit Encryption</span>
+                        <span class="sa-sec-badge">🏛️ Bank-Level Security</span>
+                        <span class="sa-sec-badge">👁️ Read-Only Access</span>
+                    </div>
+                    <button id="connect-btn" class="sa-connect-btn" onclick="startPlaidLink()">
+                        Connect Bank via Plaid
+                    </button>
+                    <span id="connect-status" class="sa-connect-status"></span>
+                </div>
+            </div>
+        </section>
 
-    <!-- ── Summary cards ── -->
-    <div id="summary-cards" style="display:none; display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;">
-        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
-            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Total Spent</div>
-            <div id="card-spent" style="font-size:28px; font-weight:700; color:#f43f5e; margin:8px 0;">—</div>
-        </div>
-        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
-            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Avg/Day</div>
-            <div id="card-avg" style="font-size:28px; font-weight:700; color:#0ea5e9; margin:8px 0;">—</div>
-        </div>
-        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
-            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Top Category</div>
-            <div id="card-cat" style="font-size:20px; font-weight:700; color:#a78bfa; margin:8px 0;">—</div>
-        </div>
-        <div class="feature-box" style="flex:1; min-width:160px; text-align:center;">
-            <div style="font-size:12px; color:#888; text-transform:uppercase; letter-spacing:1px;">Transactions</div>
-            <div id="card-count" style="font-size:28px; font-weight:700; color:#22c55e; margin:8px 0;">—</div>
-        </div>
-    </div>
+        <!-- ── Dashboard (shown after bank is connected) ── -->
+        <div id="dashboard" class="sa-dashboard" style="display:none;">
 
-    <!-- ── Spending bars ── -->
-    <div id="breakdown-section" style="display:none; margin-bottom:24px;">
-        <h3>Spending by Category</h3>
-        <div id="breakdown-bars"></div>
-    </div>
+            <!-- Filter Bar -->
+            <div class="sa-filter-bar">
+                <span class="sa-filter-label">Showing last:</span>
+                <div class="sa-filter-btns" id="filter-section">
+                    <button class="sa-filter-btn" onclick="switchPeriod(7,  this)">7 days</button>
+                    <button class="sa-filter-btn sa-filter-active" onclick="switchPeriod(30, this)">30 days</button>
+                    <button class="sa-filter-btn" onclick="switchPeriod(60, this)">60 days</button>
+                    <button class="sa-filter-btn" onclick="switchPeriod(90, this)">90 days</button>
+                </div>
+                <span class="sa-connected-badge">✅ Bank Connected</span>
+            </div>
 
-    <!-- ── Recommendations ── -->
-    <div id="recs-section" style="display:none; margin-bottom:24px;">
-        <h3>💡 AI Recommendations</h3>
-        <div id="recs-list"></div>
-    </div>
+            <!-- Summary Cards -->
+            <div id="summary-cards" class="sa-summary-grid">
+                <div class="sa-stat-card">
+                    <div class="sa-stat-label">Total Spent</div>
+                    <div id="card-spent" class="sa-stat-value sa-val-red">—</div>
+                    <div class="sa-stat-sub">this period</div>
+                </div>
+                <div class="sa-stat-card">
+                    <div class="sa-stat-label">Daily Average</div>
+                    <div id="card-avg" class="sa-stat-value sa-val-blue">—</div>
+                    <div class="sa-stat-sub">per day</div>
+                </div>
+                <div class="sa-stat-card">
+                    <div class="sa-stat-label">Top Category</div>
+                    <div id="card-cat" class="sa-stat-value sa-val-purple">—</div>
+                    <div class="sa-stat-sub">highest spend</div>
+                </div>
+                <div class="sa-stat-card">
+                    <div class="sa-stat-label">Transactions</div>
+                    <div id="card-count" class="sa-stat-value sa-val-green">—</div>
+                    <div class="sa-stat-sub">total count</div>
+                </div>
+            </div>
 
-    <!-- ── Transactions table ── -->
-    <div id="tx-section" style="display:none;">
-        <h3>Recent Transactions <span id="tx-total" style="font-size:13px; color:#888; font-weight:400;"></span></h3>
-        <div id="tx-list"></div>
-        <button id="load-more-btn" class="btn-primary" style="display:none; margin-top:12px; width:100%;"
-                onclick="loadMore()">Load More</button>
-    </div>
+            <!-- Mid Row: Category Breakdown + AI Report -->
+            <div class="sa-two-col">
+                <div id="breakdown-section" class="sa-panel">
+                    <h3 class="sa-panel-title">📊 Spending by Category</h3>
+                    <div id="breakdown-bars"><p class="sa-loading">Loading categories…</p></div>
+                </div>
+                <div id="recs-section" class="sa-panel">
+                    <h3 class="sa-panel-title">💡 AI Recommendations</h3>
+                    <div id="recs-list"><p class="sa-loading">Generating AI report…</p></div>
+                </div>
+            </div>
 
-    <!-- ── Recurring Transactions ── -->
-    <div id="recurring-section" style="display:none; margin-bottom:24px;">
-        <h3>🔁 Recurring Transactions</h3>
-        <p style="font-size:13px;color:#64748b;margin-bottom:8px;">Merchants that appear in 2+ months — possible subscriptions or habits.</p>
-        <div id="recurring-list" style="border:1px solid #1e293b;border-radius:8px;overflow:hidden;"></div>
-    </div>
+            <!-- Transactions Table -->
+            <div id="tx-section" class="sa-panel">
+                <div class="sa-panel-header">
+                    <h3 class="sa-panel-title">💳 Recent Transactions</h3>
+                    <span id="tx-total" class="sa-tx-count"></span>
+                </div>
+                <div id="tx-list"><p class="sa-loading">Loading transactions…</p></div>
+                <button id="load-more-btn" class="sa-load-more" style="display:none;" onclick="loadMore()">
+                    Load More Transactions
+                </button>
+            </div>
 
-    <!-- ── Anomalies ── -->
-    <div id="anomalies-section" style="display:none; margin-bottom:24px;">
-        <h3>⚠️ Spending Anomalies</h3>
-        <p style="font-size:13px;color:#64748b;margin-bottom:8px;">Transactions that are more than 2× the average for their category.</p>
-        <div id="anomalies-list" style="border:1px solid #1e293b;border-radius:8px;overflow:hidden;"></div>
-    </div>
+            <!-- Bottom Row: Recurring + Anomalies -->
+            <div class="sa-two-col">
+                <div id="recurring-section" class="sa-panel">
+                    <h3 class="sa-panel-title">🔁 Recurring Transactions</h3>
+                    <p class="sa-panel-sub">Merchants appearing in 2+ months — likely subscriptions or habits.</p>
+                    <div id="recurring-list"><p class="sa-loading">Detecting patterns…</p></div>
+                </div>
+                <div id="anomalies-section" class="sa-panel">
+                    <h3 class="sa-panel-title">⚠️ Spending Anomalies</h3>
+                    <p class="sa-panel-sub">Transactions more than 2× the average for their category.</p>
+                    <div id="anomalies-list"><p class="sa-loading">Scanning anomalies…</p></div>
+                </div>
+            </div>
 
-    <!-- ── AI Chat ── -->
-    <div id="chat-section" style="display:none; margin-bottom:24px;">
-        <h3>💬 Ask CashLens AI</h3>
-        <div id="chat-output"
-             style="min-height:80px;max-height:300px;overflow-y:auto;background:#0f172a;
-                    border:1px solid #1e293b;border-radius:8px;padding:12px;margin-bottom:8px;"></div>
-        <div style="display:flex;gap:8px;">
-            <input id="chat-input" type="text" placeholder="e.g. Where am I overspending?"
-                   style="flex:1;padding:8px 12px;background:#1e293b;border:1px solid #334155;
-                          border-radius:8px;color:#f8fafc;font-size:13px;outline:none;" />
-            <button class="btn-primary" onclick="sendChat()">Send</button>
-        </div>
-    </div>
+            <!-- AI Chat -->
+            <div id="chat-section" class="sa-panel sa-chat-panel">
+                <h3 class="sa-panel-title">💬 Ask CashLens AI</h3>
+                <p class="sa-panel-sub">Ask anything about your spending and get personalised AI insights.</p>
+                <div id="chat-output" class="sa-chat-output"></div>
+                <div class="sa-chat-input-row">
+                    <input
+                        id="chat-input"
+                        class="sa-chat-input"
+                        type="text"
+                        placeholder="e.g. Where am I overspending this month?"
+                    />
+                    <button class="sa-chat-send" onclick="sendChat()">Send ↑</button>
+                </div>
+            </div>
 
-    <!-- ── Error box ── -->
-    <div id="error-box" style="display:none; background:#450a0a; border:1px solid #7f1d1d;
-         border-radius:8px; padding:12px 16px; color:#fca5a5; margin-top:16px; font-size:14px;"></div>
-</section>
+        </div><!-- /dashboard -->
 
-<!-- Plaid Link JS (loads from CDN) -->
-<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-<script src="plaid.js"></script>
-<script>
-  // Show chat section once bank is connected
-  const _origExchange = window.exchangeToken;
-  document.addEventListener("DOMContentLoaded", () => {
-    const origLoad = window.loadTransactions;
-    window.loadTransactions = function(days) {
-      document.getElementById("chat-section").style.display = "";
-      return origLoad(days);
-    };
-  });
-</script>
+        <!-- Error Box -->
+        <div id="error-box" class="sa-error-box" style="display:none;"></div>
+
     </main>
 
-</body>
+    <footer>
+        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; CashLens AI Spending Analyzer</p>
+    </footer>
 
+    <!-- plaid.js after DOM so IDs exist -->
+    <script src="plaid.js"></script>
+
+    <script>
+        // Period switcher — keeps active highlight on filter buttons
+        function switchPeriod(days, btn) {
+            document.querySelectorAll('.sa-filter-btn')
+                    .forEach(b => b.classList.remove('sa-filter-active'));
+            btn.classList.add('sa-filter-active');
+            loadTransactions(days);
+        }
+
+        // After connection, show dashboard and collapse the connect card
+        const _origExchange = window.exchangeToken;
+        window.exchangeToken = async function(token) {
+            await _origExchange(token);
+            // plaid.js calls show("filter-section") — override to show full dashboard
+            document.getElementById('dashboard').style.display = '';
+            document.getElementById('connect-area').style.display = 'none';
+        };
+
+        // Allow pressing Enter in chat
+        document.addEventListener('DOMContentLoaded', () => {
+            const inp = document.getElementById('chat-input');
+            if (inp) inp.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+            });
+        });
+    </script>
+
+</body>
 </html>

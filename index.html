@@ -1,33 +1,28 @@
-<!-- Starts the Program -->
 <!DOCTYPE html>
-
-<!-- HTML Folder -->
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <title>Fiserv CFO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
     <script src="script.js" defer></script>
-    <script src="plant-id.js" defer></script>
 </head>
 
 <body>
-    <!-- Built Headers -->
 
+    <!-- Header -->
     <header class="header">
         <div class="main-header">
             <h2 class="topheader">
-                <a class="logo" href="index.html">
-                    Fiserv CFO
-                </a>
+                <a class="logo" href="index.html">Fiserv CFO</a>
             </h2>
-
         </div>
 
-        <!-- Builds Navigation Tabs -->
+        <!-- Navigation Tabs -->
         <nav class="centertabs">
             <ul class="other_tabs1">
                 <li class="tab" id="banks" onclick="loadPage('banks')">Banks</li>
@@ -40,85 +35,102 @@
         </nav>
     </header>
 
-    <!-- Main -->
     <main>
+
         <!-- Hero Banner -->
         <section class="hero-banner">
             <div class="hero-content">
-                <div class="hero-badge">Fiserv Fintech Challenge</div>
+                <div class="hero-badge">&#127942; Fiserv Fintech Challenge</div>
                 <h1 class="hero-main-title">Fiserv CFO</h1>
-                <p class="hero-tagline">Your Smart Companion for all parts of daily financial life</p>
+                <p class="hero-tagline">Your Smart Companion for every part of daily financial life</p>
                 <p class="hero-description">
-                    cash-management platform powered by an AI multi-agent orchestrator that acts like a personal accountant, with optional paid packages for advanced features The system uses AI to simplify payments and manage expenses across multiple accounts by integrating
-                    with banks and digital wallets To ensure security, the app includes multiple layers of encryption and authentication to protect users and their money It also tracks spending patterns and provides personalized financial insights to
-                    help users make better financial decisions The user interface is sleek and modern, featuring interactive elements such as pop-ups, buttons, a navigation bar, and both light and dark modes The app is fully responsive, adapting smoothly
-                    to different screen sizes for a better user experience Moreover, we are adding speech & voice interface and commands, so the user just has to give permission; meanwhile, the AI takes care of the difficult part Overall, the prototype
-                    showcases automated expense management, multi-account handling, managing utilities, personalized financial guidance, and a clean, interactive design.
+                    A cash-management platform powered by an AI multi-agent orchestrator that acts like a personal
+                    accountant. The system uses AI to simplify payments and manage expenses across multiple accounts —
+                    integrating with banks and digital wallets, tracking spending patterns, and providing personalized
+                    financial insights to help you make better decisions.
                 </p>
                 <div class="hero-buttons">
-                    <button class="btn-hero btn-primary" onclick="loadPage('banks')">Try Banks</button>
-                    <button class="btn-hero btn-secondary" onclick="loadPage('groceries')">Explore Grocery Options</button>
-                    <button class="btn-hero btn-tertiary" onclick="loadPage('school')">School Finances</button>
-                    <button class="btn-hero btn-quaternary" onclick="loadPage('spending-analyzer')">Analyze Your Spending</button>
-                    <button class="btn-hero btn-quinary" onclick="loadPage('utilities')">Manage Utilities</button>
-                    <button class="btn-hero btn-sexenary" onclick="loadPage('work')">Work Expenses</button>
+                    <button class="btn-hero btn-primary" onclick="loadPage('banks')">Banks</button>
+                    <button class="btn-hero btn-secondary" onclick="loadPage('groceries')">Groceries</button>
+                    <button class="btn-hero btn-tertiary" onclick="loadPage('school')">School</button>
+                    <button class="btn-hero btn-quaternary" onclick="loadPage('spending-analyzer')">Spending Analyzer</button>
+                    <button class="btn-hero btn-quinary" onclick="loadPage('utilities')">Utilities</button>
+                    <button class="btn-hero btn-sexenary" onclick="loadPage('work')">Work</button>
                 </div>
             </div>
             <div class="hero-visual">
-                <img src="https://cdn.pixabay.com/photo/2024/12/31/09/17/digital-9301923_640.jpg" </div>
+                <img
+                    src="https://cdn.pixabay.com/photo/2024/12/31/09/17/digital-9301923_640.jpg"
+                    alt="Digital Finance Platform Illustration"
+                >
+            </div>
         </section>
 
-        <!-- Project Mission -->
-        <section class="mission-section ">
-            <div class="mission-card ">
-                <h2 class="section-heading ">Our Mission</h2>
-                <p class="mission-text ">
-                    Money management can be difficult With all the different apps, multiple payments, and unclear spending, life can be stressful We want to build a smart AI assistant that handles these problems and lets people focus on their lives, taking away some of the
-                    stress.
+    </main>
+
+    <!-- Mission Section (full-width, outside main) -->
+    <section class="mission-section">
+        <div class="mission-card">
+            <h2 class="section-heading">Our Mission</h2>
+            <p class="mission-text">
+                Money management can be difficult. With all the different apps, multiple payments, and unclear
+                spending, life can be stressful. We want to build a smart AI assistant that handles these problems
+                and lets people focus on their lives — taking away some of the financial stress.
+            </p>
+        </div>
+    </section>
+
+    <!-- Features Grid (full-width) -->
+    <section class="features-section">
+        <h2 class="section-heading">Platform Features</h2>
+        <div class="features-grid">
+
+            <div class="feature-box">
+                <span class="feature-icon">🤖</span>
+                <h3 class="feature-box-title">AI-Powered Analyzer</h3>
+                <p class="feature-box-text">
+                    Our AI-driven platform simplifies financial management by analyzing spending patterns,
+                    categorizing expenses, and providing actionable insights to help users optimize their finances.
                 </p>
+                <div class="feature-tech">
+                    <span class="tech-badge">AI-Powered</span>
+                    <span class="tech-badge">Image Recognition</span>
+                </div>
             </div>
-        </section>
 
-        <!-- Features Grid -->
-        <section class="features-section ">
-            <h2 class="section-heading ">Platform Features</h2>
-            <div class="features-grid ">
-
-                <div class="feature-box ">
-                    <div class="feature-icon ">🤖</div>
-                    <h3 class="feature-box-title ">AI-Powered Analyzer
-                        <p class="feature-box-text ">
-                            Our AI-driven platform simplifies financial management by analyzing spending patterns, categorizing expenses, and providing actionable insights to help users optimize their finances.
-                        </p>
-                        <div class="feature-tech ">
-                            <span class="tech-badge ">AI-Powered</span>
-                            <span class="tech-badge ">Image Recognition</span>
-                        </div>
+            <div class="feature-box">
+                <span class="feature-icon">📚</span>
+                <h3 class="feature-box-title">Home Finance Database</h3>
+                <p class="feature-box-text">
+                    Our platform offers a comprehensive database of home finance information, including budgeting
+                    tools, investment advice, and financial planning resources.
+                </p>
+                <div class="feature-tech">
+                    <span class="tech-badge">AI-Powered</span>
+                    <span class="tech-badge">Data Implementation</span>
                 </div>
-
-                <div class="feature-box ">
-                    <div class="feature-icon ">📚</div>
-                    <h3 class="feature-box-title ">Comprehensive Home Finance Database</h3>
-                    <p class="feature-box-text ">
-                        Our platform offers a comprehensive database of home finance information, including budgeting tools, investment advice, and financial planning resources.
-                    </p>
-                    <div class="feature-tech ">
-                        <span class="tech-badge ">AI-Powered</span>
-                        <span class="tech-badge ">Data Implementation</span>
-                    </div>
-                </div>
-
-                <div class="feature-box ">
-                    <div class="feature-icon ">👱</div>
-                    <h3 class="feature-box-title ">Your Chatbot</h3>
-                    <p class="feature-box-text ">
-                        Our user-friendly chatbot provides instant assistance and guidance on various financial topics, ensuring users have the support they need when they need it.
-                    </p>
-                    <div class="feature-tech ">
-                        <span class="tech-badge ">Increased Financial Awareness</span>
-                        <span class="tech-badge ">Organization</span>
-                    </div>
-                </div>
-
             </div>
-        </section>
+
+            <div class="feature-box">
+                <span class="feature-icon">💬</span>
+                <h3 class="feature-box-title">Your Personal Chatbot</h3>
+                <p class="feature-box-text">
+                    Our user-friendly chatbot provides instant assistance and guidance on various financial topics,
+                    ensuring users have the support they need when they need it.
+                </p>
+                <div class="feature-tech">
+                    <span class="tech-badge">Financial Awareness</span>
+                    <span class="tech-badge">Organization</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
+    </footer>
+
+</body>
+</html>

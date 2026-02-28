@@ -37,12 +37,20 @@ function setStatus(msg, color) {
   const el = $("connect-status");
   if (!el) return;
   el.textContent = msg;
-  el.style.color = color || "#888";
+  el.style.color = color || "rgba(250,250,250,0.55)";
 }
 
 function show(id)    { const el = $(id); if (el) el.style.display = ""; }
 function hide(id)    { const el = $(id); if (el) el.style.display = "none"; }
 function showFlex(id){ const el = $(id); if (el) el.style.display = "flex"; }
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(API_BASE + path, {
@@ -67,7 +75,7 @@ async function startPlaidLink() {
 
     // Simulation mode: skip Plaid Link UI entirely
     if (data.simulation_mode) {
-      setStatus("Simulation mode — using fake bank data.", "#f59e0b");
+      setStatus("Simulation mode — using demo bank data.", "#f59e0b");
       await exchangeToken("fake-public-token");
       return;
     }
@@ -80,17 +88,20 @@ async function startPlaidLink() {
         await exchangeToken(public_token);
       },
       onExit: (err) => {
-        if (err) showError("Plaid Link closed with error: " + (err.display_message || err.error_message || JSON.stringify(err)));
-        else setStatus("Connection cancelled.", "#888");
-        if (btn) { btn.disabled = false; btn.textContent = "🏦 Connect Bank via Plaid"; }
+        if (err) {
+          showError("Plaid Link closed with error: " + (err.display_message || err.error_message || JSON.stringify(err)));
+        } else {
+          setStatus("Connection cancelled.", "#888");
+        }
+        if (btn) { btn.disabled = false; btn.textContent = "Connect Bank via Plaid"; }
       },
     });
     handler.open();
 
   } catch (err) {
     showError("Could not start Plaid Link: " + err.message);
-    setStatus("Failed.", "#ef4444");
-    if (btn) { btn.disabled = false; btn.textContent = "🏦 Connect Bank via Plaid"; }
+    setStatus("Failed to connect.", "#ef4444");
+    if (btn) { btn.disabled = false; btn.textContent = "Connect Bank via Plaid"; }
   }
 }
 
@@ -102,15 +113,20 @@ async function exchangeToken(publicToken) {
     });
     state.connected = true;
     setStatus("✅ Bank connected!", "#22c55e");
+
     const btn = $("connect-btn");
     if (btn) { btn.textContent = "✅ Connected"; btn.disabled = true; }
-    show("filter-section");
+
+    // Show the full dashboard (filter-section is now inside dashboard)
+    show("dashboard");
+    hide("connect-area");
+
     loadTransactions(30);
   } catch (err) {
     showError("Token exchange failed: " + err.message);
     setStatus("Connection failed.", "#ef4444");
     const btn = $("connect-btn");
-    if (btn) { btn.disabled = false; btn.textContent = "🏦 Connect Bank via Plaid"; }
+    if (btn) { btn.disabled = false; btn.textContent = "Connect Bank via Plaid"; }
   }
 }
 
@@ -122,7 +138,10 @@ async function loadTransactions(days) {
   state.offset = 0;
 
   const txList = $("tx-list");
-  if (txList) txList.innerHTML = "<p style='color:#888;font-size:14px;'>Loading…</p>";
+  if (txList) txList.innerHTML = '<p class="sa-loading">Loading transactions…</p>';
+
+  const breakdownBars = $("breakdown-bars");
+  if (breakdownBars) breakdownBars.innerHTML = '<p class="sa-loading">Loading categories…</p>';
 
   try {
     const data = await apiFetch(`/transactions?days=${days}&page_size=${state.pageSize}&offset=0`);
@@ -134,10 +153,8 @@ async function loadTransactions(days) {
     renderBreakdown(data.stats);
     renderTransactions(data.transactions, false);
 
-    $("tx-total").textContent = `(${data.total_transactions} total)`;
-    show("tx-section");
-    showFlex("summary-cards");
-    show("breakdown-section");
+    const txTotal = $("tx-total");
+    if (txTotal) txTotal.textContent = `${data.total_transactions} total`;
 
     const loadMoreBtn = $("load-more-btn");
     if (loadMoreBtn) {
@@ -175,10 +192,15 @@ async function loadMore() {
 
 function renderCards(stats) {
   if (!stats) return;
-  $("card-spent").textContent  = `$${stats.total_spent.toLocaleString("en-US", {minimumFractionDigits:2})}`;
-  $("card-avg").textContent    = `$${stats.avg_daily_spend.toFixed(2)}`;
-  $("card-cat").textContent    = stats.top_category || "—";
-  $("card-count").textContent  = stats.transaction_count;
+  const spent = $("card-spent");
+  const avg   = $("card-avg");
+  const cat   = $("card-cat");
+  const count = $("card-count");
+
+  if (spent) spent.textContent = `$${stats.total_spent.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+  if (avg)   avg.textContent   = `$${stats.avg_daily_spend.toFixed(2)}`;
+  if (cat)   cat.textContent   = stats.top_category || "—";
+  if (count) count.textContent = stats.transaction_count;
 }
 
 // ─── Render: Category Breakdown Bars ─────────────────────────────────────────
@@ -189,80 +211,79 @@ function renderBreakdown(stats) {
   if (!container) return;
 
   const entries = Object.entries(stats.category_breakdown).filter(([, v]) => v > 0);
-  if (!entries.length) { container.innerHTML = "<p style='color:#888'>No data.</p>"; return; }
+  if (!entries.length) {
+    container.innerHTML = '<p class="sa-loading">No category data available.</p>';
+    return;
+  }
 
-  const max = Math.max(...entries.map(([, v]) => v));
-  const colors = ["#f43f5e","#f59e0b","#0ea5e9","#a78bfa","#22c55e","#fb923c","#38bdf8","#e879f9"];
+  const max    = Math.max(...entries.map(([, v]) => v));
+  const colors = ["#f43f5e", "#f59e0b", "#0ea5e9", "#a78bfa", "#22c55e", "#fb923c", "#38bdf8", "#e879f9"];
 
   container.innerHTML = entries.map(([cat, amt], i) => {
-    const pct = max > 0 ? Math.round((amt / max) * 100) : 0;
+    const pct   = max > 0 ? Math.round((amt / max) * 100) : 0;
     const color = colors[i % colors.length];
     return `
-      <div style="margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px;">
-          <span>${cat}</span>
-          <span style="color:${color};font-weight:600;">$${amt.toFixed(2)}</span>
+      <div class="cat-bar-row">
+        <div class="cat-bar-header">
+          <span>${escHtml(cat)}</span>
+          <span class="cat-bar-amount" style="color:${color};">$${amt.toFixed(2)}</span>
         </div>
-        <div style="background:#1e293b;border-radius:4px;height:8px;overflow:hidden;">
-          <div style="width:${pct}%;background:${color};height:100%;border-radius:4px;transition:width 0.4s;"></div>
+        <div class="cat-bar-track">
+          <div class="cat-bar-fill" style="width:${pct}%; background:${color};"></div>
         </div>
       </div>`;
   }).join("");
 }
 
-// ─── Render: Transactions Table ───────────────────────────────────────────────
+// ─── Render: Transactions ─────────────────────────────────────────────────────
 
 function renderTransactions(transactions, append) {
   const container = $("tx-list");
   if (!container) return;
 
+  if (!transactions.length && !append) {
+    container.innerHTML = '<p class="sa-loading">No transactions found.</p>';
+    return;
+  }
+
   const rows = transactions.map(tx => {
     const amount  = parseFloat(tx.amount || 0);
-    const color   = amount > 0 ? "#f43f5e" : "#22c55e";
-    const sign    = amount > 0 ? "-" : "+";
+    const isDebit = amount > 0;
+    const sign    = isDebit ? "-" : "+";
+    const cls     = isDebit ? "tx-debit" : "tx-credit";
     const cat     = Array.isArray(tx.category) ? tx.category[0] : (tx.category || "Other");
-    const pending = tx.pending ? " <span style='font-size:10px;color:#f59e0b;'>(pending)</span>" : "";
+    const pending = tx.pending
+      ? '<span class="tx-pending">Pending</span>'
+      : "";
+
     return `
-      <div style="display:flex;justify-content:space-between;align-items:center;
-                  padding:10px 14px;border-bottom:1px solid #1e293b;font-size:13px;">
-        <div>
-          <div style="font-weight:600;">${escHtml(tx.merchant_name || tx.name || "Unknown")}${pending}</div>
-          <div style="color:#64748b;font-size:12px;">${escHtml(cat)} · ${tx.date}</div>
+      <div class="tx-row">
+        <div class="tx-info">
+          <div class="tx-merchant">${escHtml(tx.merchant_name || tx.name || "Unknown")}${pending}</div>
+          <div class="tx-meta">${escHtml(cat)} &middot; ${escHtml(tx.date)}</div>
         </div>
-        <div style="font-weight:700;color:${color};">${sign}$${Math.abs(amount).toFixed(2)}</div>
+        <div class="tx-amount ${cls}">${sign}$${Math.abs(amount).toFixed(2)}</div>
       </div>`;
   }).join("");
 
   if (append) {
     container.insertAdjacentHTML("beforeend", rows);
   } else {
-    container.innerHTML = rows || "<p style='color:#888;padding:12px;'>No transactions found.</p>";
+    container.innerHTML = rows;
   }
-}
-
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 // ─── AI Report ───────────────────────────────────────────────────────────────
 
 async function loadReport(days) {
-  const section = $("recs-section");
-  const list    = $("recs-list");
-  if (!section || !list) return;
+  const list = $("recs-list");
+  if (!list) return;
 
-  list.innerHTML = "<p style='color:#888;font-size:13px;'>Generating AI report…</p>";
-  show("recs-section");
+  list.innerHTML = '<p class="sa-loading">Generating AI report…</p>';
 
   try {
     const data = await apiFetch(`/report?days=${days}`);
-    list.innerHTML = `
-      <div style="background:#0f172a;border:1px solid #1e293b;border-radius:8px;
-                  padding:16px;font-size:13px;line-height:1.7;white-space:pre-wrap;">${escHtml(data.report)}</div>`;
+    list.innerHTML = `<div class="ai-report-text">${escHtml(data.report)}</div>`;
   } catch (err) {
     list.innerHTML = `<p style="color:#f43f5e;font-size:13px;">Could not load AI report: ${escHtml(err.message)}</p>`;
   }
@@ -271,29 +292,27 @@ async function loadReport(days) {
 // ─── Recurring Transactions ───────────────────────────────────────────────────
 
 async function loadRecurring(days) {
-  const section = $("recurring-section");
-  const list    = $("recurring-list");
-  if (!section || !list) return;
+  const list = $("recurring-list");
+  if (!list) return;
 
-  show("recurring-section");
-  list.innerHTML = "<p style='color:#888;font-size:13px;'>Detecting recurring transactions…</p>";
+  list.innerHTML = '<p class="sa-loading">Detecting recurring transactions…</p>';
 
   try {
     const data = await apiFetch(`/recurring?days=${Math.max(days, 60)}`);
     if (!data.recurring.length) {
-      list.innerHTML = "<p style='color:#888;font-size:13px;'>No recurring transactions detected.</p>";
+      list.innerHTML = '<p class="sa-loading">No recurring transactions detected.</p>';
       return;
     }
     list.innerHTML = data.recurring.map(r => `
-      <div style="display:flex;justify-content:space-between;align-items:center;
-                  padding:10px 14px;border-bottom:1px solid #1e293b;font-size:13px;">
-        <div>
-          <div style="font-weight:600;">${escHtml(r.merchant)}
-            ${r.is_subscription ? " <span style='font-size:10px;background:#1e3a5f;color:#38bdf8;padding:1px 6px;border-radius:4px;'>SUBSCRIPTION</span>" : ""}
+      <div class="recurring-row">
+        <div class="rec-info">
+          <div class="rec-name">
+            ${escHtml(r.merchant)}
+            ${r.is_subscription ? '<span class="rec-badge-sub">Subscription</span>' : ""}
           </div>
-          <div style="color:#64748b;font-size:12px;">${escHtml(r.category)} · ${r.count}× seen · months: ${r.months_seen.join(", ")}</div>
+          <div class="rec-meta">${escHtml(r.category)} &middot; ${r.count}× seen &middot; ${r.months_seen.join(", ")}</div>
         </div>
-        <div style="font-weight:700;color:#f59e0b;">~$${r.avg_amount.toFixed(2)}/mo</div>
+        <div class="rec-amount">~$${r.avg_amount.toFixed(2)}/mo</div>
       </div>`).join("");
   } catch (err) {
     list.innerHTML = `<p style="color:#f43f5e;font-size:13px;">Could not load recurring: ${escHtml(err.message)}</p>`;
@@ -303,27 +322,24 @@ async function loadRecurring(days) {
 // ─── Anomalies ────────────────────────────────────────────────────────────────
 
 async function loadAnomalies(days) {
-  const section = $("anomalies-section");
-  const list    = $("anomalies-list");
-  if (!section || !list) return;
+  const list = $("anomalies-list");
+  if (!list) return;
 
-  show("anomalies-section");
-  list.innerHTML = "<p style='color:#888;font-size:13px;'>Scanning for anomalies…</p>";
+  list.innerHTML = '<p class="sa-loading">Scanning for anomalies…</p>';
 
   try {
     const data = await apiFetch(`/anomalies?days=${days}`);
     if (!data.anomalies.length) {
-      list.innerHTML = "<p style='color:#888;font-size:13px;'>No spending anomalies detected. 🎉</p>";
+      list.innerHTML = '<p class="sa-loading">No spending anomalies detected. 🎉</p>';
       return;
     }
     list.innerHTML = data.anomalies.map(a => `
-      <div style="display:flex;justify-content:space-between;align-items:center;
-                  padding:10px 14px;border-bottom:1px solid #1e293b;font-size:13px;">
-        <div>
-          <div style="font-weight:600;color:#f43f5e;">${escHtml(a.merchant)} — $${a.amount.toFixed(2)}</div>
-          <div style="color:#64748b;font-size:12px;">${escHtml(a.flag)} · ${a.date}</div>
+      <div class="anomaly-row">
+        <div class="anomaly-info">
+          <div class="anomaly-name">${escHtml(a.merchant)} — $${a.amount.toFixed(2)}</div>
+          <div class="anomaly-flag">${escHtml(a.flag)} &middot; ${escHtml(a.date)}</div>
         </div>
-        <div style="font-weight:700;color:#ef4444;">${a.ratio}×</div>
+        <div class="anomaly-ratio">${a.ratio}×</div>
       </div>`).join("");
   } catch (err) {
     list.innerHTML = `<p style="color:#f43f5e;font-size:13px;">Could not load anomalies: ${escHtml(err.message)}</p>`;
@@ -333,7 +349,7 @@ async function loadAnomalies(days) {
 // ─── AI Chat ──────────────────────────────────────────────────────────────────
 
 async function sendChat() {
-  const input = $("chat-input");
+  const input  = $("chat-input");
   const output = $("chat-output");
   if (!input || !output) return;
 
@@ -341,11 +357,15 @@ async function sendChat() {
   if (!message) return;
 
   input.disabled = true;
+
+  // User bubble
   output.insertAdjacentHTML("beforeend", `
-    <div style="text-align:right;margin-bottom:8px;">
-      <span style="background:#1e3a5f;padding:6px 12px;border-radius:12px;font-size:13px;">${escHtml(message)}</span>
-    </div>`);
-  output.insertAdjacentHTML("beforeend", `<div id="chat-thinking" style="color:#888;font-size:13px;padding:4px 0;">CashLens AI is thinking…</div>`);
+    <div class="chat-msg-user">${escHtml(message)}</div>`);
+
+  // Thinking indicator
+  output.insertAdjacentHTML("beforeend", `
+    <div class="chat-msg-thinking" id="chat-thinking">CashLens AI is thinking…</div>`);
+
   input.value = "";
   output.scrollTop = output.scrollHeight;
 
@@ -356,12 +376,11 @@ async function sendChat() {
     });
     $("chat-thinking")?.remove();
     output.insertAdjacentHTML("beforeend", `
-      <div style="margin-bottom:8px;">
-        <span style="background:#0f172a;border:1px solid #1e293b;padding:6px 12px;border-radius:12px;font-size:13px;display:inline-block;">${escHtml(data.reply)}</span>
-      </div>`);
+      <div class="chat-msg-ai">${escHtml(data.reply)}</div>`);
   } catch (err) {
     $("chat-thinking")?.remove();
-    output.insertAdjacentHTML("beforeend", `<div style="color:#f43f5e;font-size:13px;">Error: ${escHtml(err.message)}</div>`);
+    output.insertAdjacentHTML("beforeend", `
+      <div class="chat-msg-ai" style="color:#f87171;">Error: ${escHtml(err.message)}</div>`);
   } finally {
     input.disabled = false;
     input.focus();

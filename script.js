@@ -1,4 +1,10 @@
 function loadPage(page) {
+    // spending-analyzer requires Plaid scripts — navigate directly
+    if (page === "spending-analyzer") {
+        window.location.href = "spending-analyzer.html";
+        return;
+    }
+
     const main = document.querySelector("main");
     if (!main) return;
 
@@ -7,7 +13,6 @@ function loadPage(page) {
         banks: "banks.html",
         groceries: "groceries.html",
         school: "school.html",
-        "spending-analyzer": "spending-analyzer.html",
         utilities: "utilities.html",
         work: "work.html"
     };
