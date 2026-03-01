@@ -1,44 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>School - Home Finance AI</title>
+    <title>School - Fiserv CFO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
-
 <body>
-
     <header class="header">
         <div class="main-header">
-            <h1 class="logo">Home Finance AI</h1>
-            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
+            <h2 class="topheader"><a class="logo" href="index.html">Fiserv CFO</a></h2>
         </div>
-
-        <nav class="nav-tabs">
-            <ul>
-                <li><a href="banks.html" class="nav-btn">Banks</a></li>
-                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
-                <li><a href="school.html" class="nav-btn">School</a></li>
-                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
-                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
-                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
-                <li><a href="contact.html" class="nav-btn">Contact</a></li>
+        <nav class="centertabs">
+            <ul class="other_tabs1">
+                <li class="tab" id="banks" onclick="loadPage('banks')">Banks</li>
+                <li class="tab" id="groceries" onclick="loadPage('groceries')">Groceries</li>
+                <li class="tab active" id="school" onclick="loadPage('school')">School</li>
+                <li class="tab" id="spending-analyzer" onclick="loadPage('spending-analyzer')">Spending Analyzer</li>
+                <li class="tab" id="utilities" onclick="loadPage('utilities')">Utilities</li>
+                <li class="tab" id="work" onclick="loadPage('work')">Work</li>
             </ul>
         </nav>
     </header>
-
     <main>
-        <section class="feature-page">
-            <h2>School</h2>
-            <p>
-                Manage school-related payments, fees, uniforms, and activity reminders efficiently.
-            </p>
+        <section class="page-hero">
+            <div>
+                <div class="sub-hero-badge">&#128218; Education Finance</div>
+                <h1 class="sub-hero-title">School Finance Tracker</h1>
+                <p class="sub-hero-tagline">Manage every school expense with ease</p>
+                <p class="sub-hero-desc">Track tuition payments, school fees, activity costs, and grow your education savings fund — stay ahead of every upcoming payment.</p>
+            </div>
+            <div>
+                <img class="sub-hero-img" src="https://cdn.pixabay.com/photo/2016/11/19/22/12/books-1842243_640.jpg" alt="Education">
+            </div>
         </section>
+
+        <div class="stats-bar">
+            <div class="stat-card purple"><span class="stat-icon">&#127979;</span><div class="stat-label">Annual Tuition</div><div class="stat-value">$24,000</div><div class="stat-sub">2025-2026 school year</div></div>
+            <div class="stat-card green"><span class="stat-icon">&#9989;</span><div class="stat-label">Paid to Date</div><div class="stat-value">$18,000</div><div class="stat-sub">75% of year complete</div></div>
+            <div class="stat-card red"><span class="stat-icon">&#128197;</span><div class="stat-label">Next Payment</div><div class="stat-value">$6,000</div><div class="stat-sub">Due Mar 1 — 1 day away</div></div>
+            <div class="stat-card navy"><span class="stat-icon">&#127381;</span><div class="stat-label">Education Fund</div><div class="stat-value">$45,000</div><div class="stat-sub">56% to $80K goal</div></div>
+        </div>
+
+        <!-- Education Savings Goal -->
+        <div class="savings-goal">
+            <div class="savings-title">&#127381; Education Savings Fund</div>
+            <div class="savings-amount">$45,000</div>
+            <div class="savings-sub">saved toward $80,000 college goal</div>
+            <div class="savings-progress-wrap">
+                <div class="savings-fill" style="width:56.25%"></div>
+            </div>
+            <div class="savings-meta">
+                <span>56% complete</span>
+                <span>$35,000 remaining</span>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="content-card">
+                <div class="content-card-title">&#128197; Upcoming Payments</div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot red"></div>
+                    <div class="timeline-info">
+                        <div class="timeline-name">Q4 Tuition Payment</div>
+                        <div class="timeline-date">Due Mar 1, 2026 &mdash; <span style="color:#EF4444;font-weight:600">1 day away</span></div>
+                    </div>
+                    <div>
+                        <div class="timeline-amount">$6,000</div>
+                        <span class="badge badge-red">Urgent</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot orange"></div>
+                    <div class="timeline-info">
+                        <div class="timeline-name">Spring Semester Activity Fee</div>
+                        <div class="timeline-date">Due Mar 15, 2026</div>
+                    </div>
+                    <div>
+                        <div class="timeline-amount">$150</div>
+                        <span class="badge badge-orange">Soon</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot blue"></div>
+                    <div class="timeline-info">
+                        <div class="timeline-name">Spring Field Trip</div>
+                        <div class="timeline-date">Due Mar 20, 2026</div>
+                    </div>
+                    <div>
+                        <div class="timeline-amount">$85</div>
+                        <span class="badge badge-blue">Upcoming</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot blue"></div>
+                    <div class="timeline-info">
+                        <div class="timeline-name">Yearbook Order</div>
+                        <div class="timeline-date">Due Apr 1, 2026</div>
+                    </div>
+                    <div>
+                        <div class="timeline-amount">$65</div>
+                        <span class="badge badge-blue">Upcoming</span>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot gray"></div>
+                    <div class="timeline-info">
+                        <div class="timeline-name">Sports Equipment Fund</div>
+                        <div class="timeline-date">Due Apr 15, 2026</div>
+                    </div>
+                    <div>
+                        <div class="timeline-amount">$120</div>
+                        <span class="badge badge-gray">Scheduled</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="content-card-title">&#128202; Expense Breakdown</div>
+
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#127979; Tuition</span><span class="cat-amounts">$18,000 / $24,000</span></div>
+                    <div class="progress-wrap"><div class="progress-bar purple" style="width:75%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128218; Books &amp; Supplies</span><span class="cat-amounts">$450 / $600</span></div>
+                    <div class="progress-wrap"><div class="progress-bar" style="width:75%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#9917; Activities &amp; Clubs</span><span class="cat-amounts">$275 / $400</span></div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:69%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128084; Uniforms &amp; Clothing</span><span class="cat-amounts">$320 / $350</span></div>
+                    <div class="progress-wrap"><div class="progress-bar red" style="width:91%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#127829; Lunch Account</span><span class="cat-amounts">$180 / $800</span></div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:22%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128640; School Trips</span><span class="cat-amounts">$85 / $200</span></div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:42%"></div></div>
+                </div>
+
+                <div style="margin-top:20px">
+                    <div class="content-card-title" style="border-bottom:none;margin-bottom:12px;padding-bottom:0">&#128200; Recent School Payments</div>
+                    <div class="list-item"><div class="list-icon purple">&#127979;</div><div class="list-info"><div class="list-name">Q3 Tuition</div><div class="list-sub">Dec 1, 2025</div></div><div class="list-amount negative">&#8722;$6,000</div></div>
+                    <div class="list-item"><div class="list-icon orange">&#127829;</div><div class="list-info"><div class="list-name">Lunch Account Top-Up</div><div class="list-sub">Feb 15, 2026</div></div><div class="list-amount negative">&#8722;$100</div></div>
+                    <div class="list-item"><div class="list-icon blue">&#128218;</div><div class="list-info"><div class="list-name">Spring Semester Textbooks</div><div class="list-sub">Jan 20, 2026</div></div><div class="list-amount negative">&#8722;$187</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="action-btn">&#128179; Pay Tuition</button>
+            <button class="action-btn">&#127381; Add to Savings</button>
+            <button class="action-btn">&#128197; Payment Calendar</button>
+            <button class="action-btn">&#128202; Annual Report</button>
+            <button class="action-btn">&#128217; Track Expenses</button>
+        </div>
     </main>
-
+    <footer>
+        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
+    </footer>
 </body>
-
 </html>

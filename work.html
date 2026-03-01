@@ -1,44 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Workflows - Home Finance AI</title>
+    <title>Work - Fiserv CFO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
-
 <body>
-
     <header class="header">
         <div class="main-header">
-            <h1 class="logo">Home Finance AI</h1>
-            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
+            <h2 class="topheader"><a class="logo" href="index.html">Fiserv CFO</a></h2>
         </div>
-
-        <nav class="nav-tabs">
-            <ul>
-                <li><a href="banks.html" class="nav-btn">Banks</a></li>
-                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
-                <li><a href="school.html" class="nav-btn">School</a></li>
-                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
-                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
-                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
-                <li><a href="contact.html" class="nav-btn">Contact</a></li>
+        <nav class="centertabs">
+            <ul class="other_tabs1">
+                <li class="tab" id="banks" onclick="loadPage('banks')">Banks</li>
+                <li class="tab" id="groceries" onclick="loadPage('groceries')">Groceries</li>
+                <li class="tab" id="school" onclick="loadPage('school')">School</li>
+                <li class="tab" id="spending-analyzer" onclick="loadPage('spending-analyzer')">Spending Analyzer</li>
+                <li class="tab" id="utilities" onclick="loadPage('utilities')">Utilities</li>
+                <li class="tab active" id="work" onclick="loadPage('work')">Work</li>
             </ul>
         </nav>
     </header>
-
     <main>
-        <section class="feature-page">
-            <h2>Workflows</h2>
-            <p>
-                Explore end-to-end household finance workflows: bill automation, grocery ordering, expense logging, and reporting.
-            </p>
+        <section class="page-hero">
+            <div>
+                <div class="sub-hero-badge">&#128188; Work Finance</div>
+                <h1 class="sub-hero-title">Professional Finance Hub</h1>
+                <p class="sub-hero-tagline">Track income, expenses &amp; tax deductions</p>
+                <p class="sub-hero-desc">Manage your professional earnings, log business expenses, track mileage, and maximize tax deductions — your complete work finance command center.</p>
+            </div>
+            <div>
+                <img class="sub-hero-img" src="https://cdn.pixabay.com/photo/2020/01/09/09/22/office-4751416_640.jpg" alt="Professional Finance">
+            </div>
         </section>
+
+        <!-- Income Card -->
+        <div class="income-card">
+            <div class="income-label">&#128200; Monthly Gross Income</div>
+            <div class="income-amount">$8,500</div>
+            <div class="income-period">March 2026 &bull; Annual: $102,000/yr</div>
+            <div class="income-row">
+                <div class="income-item">
+                    <span class="income-label">Base Salary</span>
+                    <strong>$7,500</strong>
+                </div>
+                <div class="income-item">
+                    <span class="income-label">Performance Bonus</span>
+                    <strong>$1,000</strong>
+                </div>
+                <div class="income-item">
+                    <span class="income-label">YTD Total</span>
+                    <strong>$22,500</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-card red"><span class="stat-icon">&#128202;</span><div class="stat-label">Business Expenses</div><div class="stat-value">$1,247</div><div class="stat-sub">This month so far</div></div>
+            <div class="stat-card green"><span class="stat-icon">&#128176;</span><div class="stat-label">Tax Deductions</div><div class="stat-value">$620</div><div class="stat-sub">Estimated this month</div></div>
+            <div class="stat-card blue"><span class="stat-icon">&#128664;</span><div class="stat-label">Mileage Tracked</div><div class="stat-value">245 mi</div><div class="stat-sub">$164 deductible @$0.67/mi</div></div>
+            <div class="stat-card teal"><span class="stat-icon">&#128176;</span><div class="stat-label">Net Earnings</div><div class="stat-value">$7,253</div><div class="stat-sub">After business expenses</div></div>
+        </div>
+
+        <div class="two-col">
+            <div class="content-card">
+                <div class="content-card-title">&#128202; Expenses by Category</div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128187; Software &amp; Tools</span><span class="cat-amounts">$127 &mdash; <span style="color:#059669">100% deductible</span></span></div>
+                    <div class="progress-wrap"><div class="progress-bar teal" style="width:100%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#127829; Business Meals</span><span class="cat-amounts">$187 &mdash; <span style="color:#D97706">50% deductible</span></span></div>
+                    <div class="progress-wrap"><div class="progress-bar" style="width:100%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128664; Travel &amp; Mileage</span><span class="cat-amounts">$164 &mdash; <span style="color:#059669">100% deductible</span></span></div>
+                    <div class="progress-wrap"><div class="progress-bar teal" style="width:100%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128187; Equipment &amp; Tech</span><span class="cat-amounts">$299 &mdash; <span style="color:#059669">100% deductible</span></span></div>
+                    <div class="progress-wrap"><div class="progress-bar teal" style="width:100%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#127891; Professional Dev</span><span class="cat-amounts">$199 &mdash; <span style="color:#059669">100% deductible</span></span></div>
+                    <div class="progress-wrap"><div class="progress-bar teal" style="width:100%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128203; Office Supplies</span><span class="cat-amounts">$87 &mdash; <span style="color:#059669">100% deductible</span></span></div>
+                    <div class="progress-wrap"><div class="progress-bar teal" style="width:100%"></div></div>
+                </div>
+
+                <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-100)">
+                    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px"><span style="font-weight:600;color:var(--text-dark)">Total Business Expenses</span><span style="font-weight:700">$1,063</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px"><span style="color:var(--gray-500)">Non-deductible (meals 50%)</span><span style="color:#DC2626">$93.75</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#059669"><span>Total Tax Deductions</span><span>$969.25</span></div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="content-card-title">&#128200; Recent Work Expenses</div>
+
+                <div class="list-item">
+                    <div class="list-icon teal">&#128187;</div>
+                    <div class="list-info"><div class="list-name">Adobe Creative Cloud</div><div class="list-sub">Mar 1 &bull; Software &bull; <span style="color:#059669">Deductible</span></div></div>
+                    <div><div class="list-amount negative">&#8722;$54.99</div></div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon orange">&#127829;</div>
+                    <div class="list-info"><div class="list-name">Client Lunch &mdash; Morton's Steakhouse</div><div class="list-sub">Feb 28 &bull; Business Meal &bull; <span style="color:#D97706">50% deductible</span></div></div>
+                    <div><div class="list-amount negative">&#8722;$127.50</div></div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon teal">&#128187;</div>
+                    <div class="list-info"><div class="list-name">Ergonomic Laptop Stand</div><div class="list-sub">Feb 25 &bull; Equipment &bull; <span style="color:#059669">Deductible</span></div></div>
+                    <div><div class="list-amount negative">&#8722;$149.00</div></div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon purple">&#127891;</div>
+                    <div class="list-info"><div class="list-name">LinkedIn Premium</div><div class="list-sub">Feb 24 &bull; Professional Dev &bull; <span style="color:#059669">Deductible</span></div></div>
+                    <div><div class="list-amount negative">&#8722;$39.99</div></div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon blue">&#128664;</div>
+                    <div class="list-info"><div class="list-name">Client Office Parking</div><div class="list-sub">Feb 22 &bull; Travel &bull; <span style="color:#059669">Deductible</span></div></div>
+                    <div><div class="list-amount negative">&#8722;$25.00</div></div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon gray">&#128203;</div>
+                    <div class="list-info"><div class="list-name">Amazon Office Supplies</div><div class="list-sub">Feb 20 &bull; Office &bull; <span style="color:#059669">Deductible</span></div></div>
+                    <div><div class="list-amount negative">&#8722;$87.00</div></div>
+                </div>
+
+                <!-- Mileage tracker -->
+                <div style="margin-top:16px;padding:16px;background:var(--gray-50);border-radius:var(--radius-sm)">
+                    <div style="font-size:14px;font-weight:700;margin-bottom:8px">&#128664; Mileage Log &mdash; March 2026</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:13px">
+                        <div><div style="color:var(--gray-500)">Miles Driven</div><div style="font-weight:700;font-size:18px">245</div></div>
+                        <div><div style="color:var(--gray-500)">IRS Rate</div><div style="font-weight:700;font-size:18px">$0.67</div></div>
+                        <div><div style="color:var(--gray-500)">Deduction</div><div style="font-weight:700;font-size:18px;color:#059669">$164.15</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="action-btn">&#10133; Log Expense</button>
+            <button class="action-btn">&#128664; Log Miles</button>
+            <button class="action-btn">&#128176; Tax Summary</button>
+            <button class="action-btn">&#128228; Export for CPA</button>
+            <button class="action-btn">&#128200; Income Report</button>
+        </div>
     </main>
-
+    <footer>
+        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
+    </footer>
 </body>
-
 </html>

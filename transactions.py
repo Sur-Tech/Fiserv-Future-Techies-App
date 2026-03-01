@@ -688,10 +688,8 @@ def _fetch_all_transactions(access_token, days):
 
 
 def _get_transactions(user_id, access_token, days):
-    if SIMULATION_MODE or access_token == "fake-access-token":
+    if SIMULATION_MODE or not access_token or access_token == "fake-access-token":
         return generate_fake_transactions(days=days, num_transactions=90)
-    if not access_token:
-        raise ValueError("Bank not connected")
     return _fetch_all_transactions(access_token, days)
 
 
@@ -778,10 +776,8 @@ def exchange_token():
 def get_accounts():
     user_id      = get_user_id()
     access_token, _ = load_token(user_id)
-    if SIMULATION_MODE or access_token == "fake-access-token":
+    if SIMULATION_MODE or not access_token or access_token == "fake-access-token":
         return _ok(accounts=generate_fake_accounts(), simulation_mode=True)
-    if not access_token:
-        return _error(400, "Bank not connected")
     try:
         resp = plaid_client.accounts_get(AccountsGetRequest(access_token=access_token))
         return _ok(accounts=[a.to_dict() for a in resp.accounts])

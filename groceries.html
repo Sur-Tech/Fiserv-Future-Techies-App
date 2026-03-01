@@ -1,44 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Groceries - Home Finance AI</title>
+    <title>Groceries - Fiserv CFO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
-
 <body>
-
     <header class="header">
         <div class="main-header">
-            <h1 class="logo">Home Finance AI</h1>
-            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
+            <h2 class="topheader"><a class="logo" href="index.html">Fiserv CFO</a></h2>
         </div>
-
-        <nav class="nav-tabs">
-            <ul>
-                <li><a href="banks.html" class="nav-btn">Banks</a></li>
-                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
-                <li><a href="school.html" class="nav-btn">School</a></li>
-                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
-                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
-                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
-                <li><a href="contact.html" class="nav-btn">Contact</a></li>
+        <nav class="centertabs">
+            <ul class="other_tabs1">
+                <li class="tab" id="banks" onclick="loadPage('banks')">Banks</li>
+                <li class="tab active" id="groceries" onclick="loadPage('groceries')">Groceries</li>
+                <li class="tab" id="school" onclick="loadPage('school')">School</li>
+                <li class="tab" id="spending-analyzer" onclick="loadPage('spending-analyzer')">Spending Analyzer</li>
+                <li class="tab" id="utilities" onclick="loadPage('utilities')">Utilities</li>
+                <li class="tab" id="work" onclick="loadPage('work')">Work</li>
             </ul>
         </nav>
     </header>
-
     <main>
-        <section class="feature-page">
-            <h2>Groceries</h2>
-            <p>
-                Track your grocery inventory, compare prices, create shopping lists, and auto-order items for your household.
-            </p>
+        <section class="page-hero">
+            <div>
+                <div class="sub-hero-badge">&#128722; Grocery Manager</div>
+                <h1 class="sub-hero-title">Smart Grocery Planner</h1>
+                <p class="sub-hero-tagline">Track, budget, and shop smarter every week</p>
+                <p class="sub-hero-desc">Manage your grocery budget, build smart shopping lists, compare prices across stores, and track spending by category — all in one place.</p>
+            </div>
+            <div>
+                <img class="sub-hero-img" src="https://cdn.pixabay.com/photo/2017/06/06/22/46/shopping-2378383_640.jpg" alt="Grocery Shopping">
+            </div>
         </section>
+
+        <div class="stats-bar">
+            <div class="stat-card green"><span class="stat-icon">&#128722;</span><div class="stat-label">Monthly Budget</div><div class="stat-value">$600</div><div class="stat-sub">Set for March 2026</div></div>
+            <div class="stat-card orange"><span class="stat-icon">&#128179;</span><div class="stat-label">Spent So Far</div><div class="stat-value">$387</div><div class="stat-sub">64% of budget used</div></div>
+            <div class="stat-card teal"><span class="stat-icon">&#129001;</span><div class="stat-label">Remaining</div><div class="stat-value">$213</div><div class="stat-sub">3 days left in month</div></div>
+            <div class="stat-card navy"><span class="stat-icon">&#128203;</span><div class="stat-label">Items on List</div><div class="stat-value">18</div><div class="stat-sub">4 already picked up</div></div>
+        </div>
+
+        <div class="two-col">
+            <div class="content-card">
+                <div class="content-card-title">&#128203; Shopping List <span style="margin-left:auto;font-size:12px;font-weight:500;color:var(--orange);cursor:pointer">+ Add Item</span></div>
+                <div class="check-item check-done"><input type="checkbox" id="g1" checked onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g1">Organic Whole Milk <span class="check-qty">1 gal</span></label><span class="check-price">$5.99</span></div>
+                <div class="check-item check-done"><input type="checkbox" id="g2" checked onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g2">Large Eggs <span class="check-qty">1 doz</span></label><span class="check-price">$4.29</span></div>
+                <div class="check-item check-done"><input type="checkbox" id="g3" checked onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g3">Greek Yogurt <span class="check-qty">3 pack</span></label><span class="check-price">$6.49</span></div>
+                <div class="check-item check-done"><input type="checkbox" id="g4" checked onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g4">Whole Wheat Bread <span class="check-qty">1 loaf</span></label><span class="check-price">$3.79</span></div>
+                <div class="check-item"><input type="checkbox" id="g5" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g5">Chicken Breast <span class="check-qty">2 lbs</span></label><span class="check-price">$9.99</span></div>
+                <div class="check-item"><input type="checkbox" id="g6" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g6">Atlantic Salmon <span class="check-qty">1 lb</span></label><span class="check-price">$12.99</span></div>
+                <div class="check-item"><input type="checkbox" id="g7" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g7">Baby Spinach <span class="check-qty">5 oz bag</span></label><span class="check-price">$3.49</span></div>
+                <div class="check-item"><input type="checkbox" id="g8" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g8">Avocados <span class="check-qty">3 ct</span></label><span class="check-price">$4.99</span></div>
+                <div class="check-item"><input type="checkbox" id="g9" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g9">Gala Apples <span class="check-qty">3 lb bag</span></label><span class="check-price">$5.49</span></div>
+                <div class="check-item"><input type="checkbox" id="g10" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g10">Extra Virgin Olive Oil <span class="check-qty">16 oz</span></label><span class="check-price">$8.99</span></div>
+                <div class="check-item"><input type="checkbox" id="g11" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g11">Brown Rice <span class="check-qty">2 lb bag</span></label><span class="check-price">$3.29</span></div>
+                <div class="check-item"><input type="checkbox" id="g12" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g12">Penne Pasta <span class="check-qty">3 boxes</span></label><span class="check-price">$3.99</span></div>
+                <div class="check-item"><input type="checkbox" id="g13" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g13">Sharp Cheddar <span class="check-qty">8 oz block</span></label><span class="check-price">$4.99</span></div>
+                <div class="check-item"><input type="checkbox" id="g14" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g14">Orange Juice <span class="check-qty">64 oz</span></label><span class="check-price">$5.79</span></div>
+                <div class="check-item"><input type="checkbox" id="g15" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g15">Broccoli <span class="check-qty">1 head</span></label><span class="check-price">$1.99</span></div>
+                <div class="check-item"><input type="checkbox" id="g16" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g16">Fresh Blueberries <span class="check-qty">1 pint</span></label><span class="check-price">$4.49</span></div>
+                <div class="check-item"><input type="checkbox" id="g17" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g17">Roma Tomatoes <span class="check-qty">4 ct</span></label><span class="check-price">$2.49</span></div>
+                <div class="check-item"><input type="checkbox" id="g18" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)"><label class="check-label" for="g18">Raw Almonds <span class="check-qty">16 oz bag</span></label><span class="check-price">$9.99</span></div>
+            </div>
+            <div>
+                <div class="content-card">
+                    <div class="content-card-title">&#128202; Budget by Category</div>
+                    <div class="cat-row"><div class="cat-header"><span class="cat-name">&#129382; Produce</span><span class="cat-amounts">$82 / $150</span></div><div class="progress-wrap"><div class="progress-bar green" style="width:55%"></div></div></div>
+                    <div class="cat-row"><div class="cat-header"><span class="cat-name">&#129385; Meat &amp; Fish</span><span class="cat-amounts">$98 / $120</span></div><div class="progress-wrap"><div class="progress-bar" style="width:82%"></div></div></div>
+                    <div class="cat-row"><div class="cat-header"><span class="cat-name">&#129371; Dairy &amp; Eggs</span><span class="cat-amounts">$72 / $80</span></div><div class="progress-wrap"><div class="progress-bar red" style="width:90%"></div></div></div>
+                    <div class="cat-row"><div class="cat-header"><span class="cat-name">&#127807; Pantry Staples</span><span class="cat-amounts">$65 / $90</span></div><div class="progress-wrap"><div class="progress-bar" style="width:72%"></div></div></div>
+                    <div class="cat-row"><div class="cat-header"><span class="cat-name">&#129381; Beverages</span><span class="cat-amounts">$38 / $60</span></div><div class="progress-wrap"><div class="progress-bar green" style="width:63%"></div></div></div>
+                    <div class="cat-row"><div class="cat-header"><span class="cat-name">&#127839; Snacks</span><span class="cat-amounts">$32 / $50</span></div><div class="progress-wrap"><div class="progress-bar green" style="width:64%"></div></div></div>
+                </div>
+                <div class="content-card">
+                    <div class="content-card-title">&#127978; Store Price Comparison</div>
+                    <div class="list-item"><div class="list-icon orange">&#128722;</div><div class="list-info"><div class="list-name">Walmart Supercenter</div><div class="list-sub">Lowest everyday prices</div></div><div><div class="list-amount">$81.37</div><div style="text-align:right;margin-top:4px"><span class="badge badge-green">Cheapest</span></div></div></div>
+                    <div class="list-item"><div class="list-icon green">&#128722;</div><div class="list-info"><div class="list-name">Trader Joe's</div><div class="list-sub">Best quality-to-price ratio</div></div><div class="list-amount">$94.20</div></div>
+                    <div class="list-item"><div class="list-icon blue">&#128722;</div><div class="list-info"><div class="list-name">Target</div><div class="list-sub">RedCard saves 5%</div></div><div class="list-amount">$99.80</div></div>
+                    <div class="list-item"><div class="list-icon gray">&#128722;</div><div class="list-info"><div class="list-name">Whole Foods Market</div><div class="list-sub">Prime member discounts</div></div><div class="list-amount">$112.45</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="quick-actions">
+            <button class="action-btn">&#10133; Add Item</button>
+            <button class="action-btn">&#128228; Share List</button>
+            <button class="action-btn">&#128260; Reorder Last Trip</button>
+            <button class="action-btn">&#128202; Monthly Report</button>
+            <button class="action-btn">&#127978; Find Deals Nearby</button>
+        </div>
     </main>
-
+    <footer>
+        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
+    </footer>
 </body>
-
 </html>

@@ -1,62 +1,248 @@
-<!-- banks.html: Banks page content -->
-<header class="header">
-    <div class="main-header">
-        <h2 class="topheader">
-            <a class="logo" href="index.html">Fiserv CFO</a>
-        </h2>
-    </div>
-    <nav class="centertabs">
-        <ul class="other_tabs1">
-            <li class="tab" data-page="banks">Banks</li>
-            <li class="tab" data-page="groceries">Groceries</li>
-            <li class="tab" data-page="school">School</li>
-            <li class="tab" data-page="spending-analyzer">Spending Analyzer</li>
-            <li class="tab" data-page="utilities">Utilities</li>
-            <li class="tab" data-page="work">Work</li>
-        </ul>
-    </nav>
-    <section class="hero-banner">
-        <div class="hero-content">
-            <div class="hero-badge">Banks Dashboard</div>
-            <h1 class="hero-main-title">Manage Your Banks</h1>
-            <p class="hero-tagline">
-                Track balances, view transactions, and manage your accounts across multiple banks.
-            </p>
-            <p class="hero-description">
-                Connect your accounts with Chase, JP Morgan, and PNC to get a unified view of your finances.
-            </p>
-        </div>
-        <div class="hero-visual">
-            <img src="https://cdn.pixabay.com/photo/2017/08/10/03/47/bank-2618580_640.png" alt="Banks Image" class="hero-img">
-        </div>
-    </section>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Banks – Fiserv CFO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
 
-    <section class="features-section">
-        <h2 class="feature-title">Supported Banks</h2>
-        <div class="features-grid">
-            <!-- Chase Bank Card -->
-            <div class="feature-box">
-                <div class="feature-icon">🏦</div>
-                <h3 class="feature-box-title">Chase Bank</h3>
-                <p class="feature-box-text">
-                    Access checking and savings accounts, credit cards, and investment services.
-                </p>
-                <div class="feature-tech">
-                    <span class="tech-badge">Checking</span>
-                    <span class="tech-badge">Savings</span>
-                    <span class="tech-badge">Investments</span>
+    <header class="header">
+        <div class="main-header">
+            <h2 class="topheader"><a class="logo" href="index.html">Fiserv CFO</a></h2>
+        </div>
+        <nav class="centertabs">
+            <ul class="other_tabs1">
+                <li class="tab active" id="banks" onclick="loadPage('banks')">Banks</li>
+                <li class="tab" id="groceries" onclick="loadPage('groceries')">Groceries</li>
+                <li class="tab" id="school" onclick="loadPage('school')">School</li>
+                <li class="tab" id="spending-analyzer" onclick="loadPage('spending-analyzer')">Spending Analyzer</li>
+                <li class="tab" id="utilities" onclick="loadPage('utilities')">Utilities</li>
+                <li class="tab" id="work" onclick="loadPage('work')">Work</li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- Hero -->
+        <section class="page-hero">
+            <div>
+                <div class="sub-hero-badge">🏦 Banking Hub</div>
+                <h1 class="sub-hero-title">Your Banking Dashboard</h1>
+                <p class="sub-hero-tagline">All your accounts, unified in one place</p>
+                <p class="sub-hero-desc">Connect Chase, JP Morgan, PNC, and more to get a real-time view of balances, transactions, and spending across every account you own.</p>
+            </div>
+            <div>
+                <img class="sub-hero-img"
+                     src="https://cdn.pixabay.com/photo/2017/08/10/03/47/bank-2618580_640.png"
+                     alt="Banking Dashboard">
+            </div>
+        </section>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-card navy">
+                <span class="stat-icon">💳</span>
+                <div class="stat-label">Total Balance</div>
+                <div class="stat-value">$69,247</div>
+                <div class="stat-sub">Across 4 accounts</div>
+            </div>
+            <div class="stat-card green">
+                <span class="stat-icon">📈</span>
+                <div class="stat-label">Monthly Income</div>
+                <div class="stat-value">+$8,500</div>
+                <div class="stat-sub">↑ 12% vs last month</div>
+            </div>
+            <div class="stat-card orange">
+                <span class="stat-icon">💸</span>
+                <div class="stat-label">Monthly Outgoing</div>
+                <div class="stat-value">$3,245</div>
+                <div class="stat-sub">↓ 5% vs last month</div>
+            </div>
+            <div class="stat-card purple">
+                <span class="stat-icon">💰</span>
+                <div class="stat-label">Net Cash Flow</div>
+                <div class="stat-value">+$5,255</div>
+                <div class="stat-sub">This month</div>
+            </div>
+        </div>
+
+        <!-- Connected Accounts -->
+        <div class="section-sub">
+            Connected Accounts <span>+ Add Account</span>
+        </div>
+        <div class="accounts-grid">
+            <div class="account-card">
+                <div>
+                    <div class="account-bank">Chase Bank</div>
+                    <div class="account-name">Checking Account</div>
                 </div>
-                <button class="btn-primary btn-hero" data-page="chase">Go to Chase</button>
+                <div>
+                    <div class="account-balance-label">Available Balance</div>
+                    <div class="account-balance">$2,847.50</div>
+                    <div class="account-number">•••• •••• •••• 4321</div>
+                </div>
+            </div>
+            <div class="account-card">
+                <div>
+                    <div class="account-bank">Chase Bank</div>
+                    <div class="account-name">High-Yield Savings</div>
+                </div>
+                <div>
+                    <div class="account-balance-label">Current Balance</div>
+                    <div class="account-balance">$12,450.00</div>
+                    <div class="account-number">•••• •••• •••• 5678</div>
+                </div>
+            </div>
+            <div class="account-card">
+                <div>
+                    <div class="account-bank">JP Morgan</div>
+                    <div class="account-name">Premier Savings</div>
+                </div>
+                <div>
+                    <div class="account-balance-label">Current Balance</div>
+                    <div class="account-balance">$45,200.00</div>
+                    <div class="account-number">•••• •••• •••• 9012</div>
+                </div>
+            </div>
+            <div class="account-card">
+                <div>
+                    <div class="account-bank">PNC Bank</div>
+                    <div class="account-name">Business Checking</div>
+                </div>
+                <div>
+                    <div class="account-balance-label">Available Balance</div>
+                    <div class="account-balance">$8,750.25</div>
+                    <div class="account-number">•••• •••• •••• 3456</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="action-btn">💸 Transfer Money</button>
+            <button class="action-btn">📄 Pay Bills</button>
+            <button class="action-btn">📊 View Statements</button>
+            <button class="action-btn">🔔 Set Alerts</button>
+            <button class="action-btn">➕ Add Account</button>
+        </div>
+
+        <!-- Two-column: Transactions + Budget -->
+        <div class="two-col">
+
+            <div class="content-card">
+                <div class="content-card-title">🔄 Recent Transactions</div>
+
+                <div class="list-item">
+                    <div class="list-icon green">📥</div>
+                    <div class="list-info">
+                        <div class="list-name">Direct Deposit – Payroll</div>
+                        <div class="list-sub">Feb 28 · Chase Checking</div>
+                    </div>
+                    <div class="list-amount positive">+$4,250.00</div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon orange">☕</div>
+                    <div class="list-info">
+                        <div class="list-name">Starbucks</div>
+                        <div class="list-sub">Feb 27 · Chase Checking</div>
+                    </div>
+                    <div class="list-amount negative">−$6.50</div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon blue">🛒</div>
+                    <div class="list-info">
+                        <div class="list-name">Amazon.com</div>
+                        <div class="list-sub">Feb 26 · Chase Credit</div>
+                    </div>
+                    <div class="list-amount negative">−$89.99</div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon purple">🎬</div>
+                    <div class="list-info">
+                        <div class="list-name">Netflix</div>
+                        <div class="list-sub">Feb 25 · Chase Checking</div>
+                    </div>
+                    <div class="list-amount negative">−$15.99</div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon green">🥗</div>
+                    <div class="list-info">
+                        <div class="list-name">Whole Foods Market</div>
+                        <div class="list-sub">Feb 24 · Chase Checking</div>
+                    </div>
+                    <div class="list-amount negative">−$127.43</div>
+                </div>
+                <div class="list-item">
+                    <div class="list-icon orange">⛽</div>
+                    <div class="list-info">
+                        <div class="list-name">Shell Gas Station</div>
+                        <div class="list-sub">Feb 23 · Chase Checking</div>
+                    </div>
+                    <div class="list-amount negative">−$54.20</div>
+                </div>
             </div>
 
-            <!-- JP Morgan Card -->
-            <div class="feature-box">
-                <div class="feature-icon">💰</div>
-                <h3 class="feature-box-title">JP Morgan</h3>
-                <p class="feature-box-text">
-                    Offers comprehensive banking services for personal and business accounts, including loans and wealth management.
-                </p>
-                <div class="feature-tech">
-                    <span class="tech-badge">Loans</span>
-                    <span class="tech-badge">Credit</span>
-                    <span class="t
+            <div class="content-card">
+                <div class="content-card-title">📊 Monthly Budget Overview</div>
+
+                <div class="cat-row">
+                    <div class="cat-header">
+                        <span class="cat-name">🍽️ Food &amp; Dining</span>
+                        <span class="cat-amounts">$687 / $800</span>
+                    </div>
+                    <div class="progress-wrap"><div class="progress-bar" style="width:86%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header">
+                        <span class="cat-name">🚗 Transportation</span>
+                        <span class="cat-amounts">$312 / $400</span>
+                    </div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:78%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header">
+                        <span class="cat-name">🛍️ Shopping</span>
+                        <span class="cat-amounts">$445 / $500</span>
+                    </div>
+                    <div class="progress-wrap"><div class="progress-bar" style="width:89%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header">
+                        <span class="cat-name">🎮 Entertainment</span>
+                        <span class="cat-amounts">$89 / $200</span>
+                    </div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:44%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header">
+                        <span class="cat-name">🏠 Bills &amp; Utilities</span>
+                        <span class="cat-amounts">$554 / $600</span>
+                    </div>
+                    <div class="progress-wrap"><div class="progress-bar" style="width:92%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header">
+                        <span class="cat-name">💊 Healthcare</span>
+                        <span class="cat-amounts">$158 / $300</span>
+                    </div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:53%"></div></div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
+    </footer>
+
+</body>
+</html>

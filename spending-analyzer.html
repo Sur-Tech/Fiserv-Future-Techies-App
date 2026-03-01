@@ -10,8 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="spending-analyzer.css">
-    <!-- Plaid Link SDK must be in <head> so it's available before plaid.js runs -->
-    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
 </head>
 
 <body>
@@ -25,48 +23,27 @@
         </div>
         <nav class="centertabs">
             <ul class="other_tabs1">
-                <li class="tab" onclick="window.location='banks.html'">Banks</li>
-                <li class="tab" onclick="window.location='groceries.html'">Groceries</li>
-                <li class="tab" onclick="window.location='school.html'">School</li>
+                <li class="tab" onclick="window.location='index.html?page=banks'">Banks</li>
+                <li class="tab" onclick="window.location='index.html?page=groceries'">Groceries</li>
+                <li class="tab" onclick="window.location='index.html?page=school'">School</li>
                 <li class="tab active" onclick="window.location='spending-analyzer.html'">Spending Analyzer</li>
-                <li class="tab" onclick="window.location='utilities.html'">Utilities</li>
-                <li class="tab" onclick="window.location='work.html'">Work</li>
+                <li class="tab" onclick="window.location='index.html?page=utilities'">Utilities</li>
+                <li class="tab" onclick="window.location='index.html?page=work'">Work</li>
             </ul>
         </nav>
     </header>
 
     <main class="sa-main">
 
-        <!-- ── Hero / Connect Section ── -->
+        <!-- ── Hero ── -->
         <section class="sa-hero">
-            <div class="sa-badge">AI-Powered &nbsp;·&nbsp; Plaid Secured</div>
+            <div class="sa-badge">AI-Powered &nbsp;&middot;&nbsp; Live Insights</div>
             <h1 class="sa-title">CashLens AI</h1>
-            <p class="sa-subtitle">Real-time spending insights powered by your actual bank data</p>
-
-            <!-- Connect Card (hidden after bank connected) -->
-            <div id="connect-area" class="sa-connect-area">
-                <div class="sa-connect-card">
-                    <span class="sa-connect-icon">🏦</span>
-                    <h2 class="sa-connect-title">Connect Your Bank Account</h2>
-                    <p class="sa-connect-desc">
-                        Securely link your bank via Plaid to get AI-powered spending analysis,
-                        subscription detection, anomaly alerts, and personalised recommendations.
-                    </p>
-                    <div class="sa-security-badges">
-                        <span class="sa-sec-badge">🔒 256-bit Encryption</span>
-                        <span class="sa-sec-badge">🏛️ Bank-Level Security</span>
-                        <span class="sa-sec-badge">👁️ Read-Only Access</span>
-                    </div>
-                    <button id="connect-btn" class="sa-connect-btn" onclick="startPlaidLink()">
-                        Connect Bank via Plaid
-                    </button>
-                    <span id="connect-status" class="sa-connect-status"></span>
-                </div>
-            </div>
+            <p class="sa-subtitle">Real-time spending insights and personalized financial intelligence</p>
         </section>
 
-        <!-- ── Dashboard (shown after bank is connected) ── -->
-        <div id="dashboard" class="sa-dashboard" style="display:none;">
+        <!-- ── Dashboard ── -->
+        <div id="dashboard" class="sa-dashboard">
 
             <!-- Filter Bar -->
             <div class="sa-filter-bar">
@@ -77,7 +54,7 @@
                     <button class="sa-filter-btn" onclick="switchPeriod(60, this)">60 days</button>
                     <button class="sa-filter-btn" onclick="switchPeriod(90, this)">90 days</button>
                 </div>
-                <span class="sa-connected-badge">✅ Bank Connected</span>
+                <span class="sa-demo-badge">📊 Demo Data</span>
             </div>
 
             <!-- Summary Cards -->
@@ -173,7 +150,7 @@
     <script src="plaid.js"></script>
 
     <script>
-        // Period switcher — keeps active highlight on filter buttons
+        // Period switcher
         function switchPeriod(days, btn) {
             document.querySelectorAll('.sa-filter-btn')
                     .forEach(b => b.classList.remove('sa-filter-active'));
@@ -181,21 +158,15 @@
             loadTransactions(days);
         }
 
-        // After connection, show dashboard and collapse the connect card
-        const _origExchange = window.exchangeToken;
-        window.exchangeToken = async function(token) {
-            await _origExchange(token);
-            // plaid.js calls show("filter-section") — override to show full dashboard
-            document.getElementById('dashboard').style.display = '';
-            document.getElementById('connect-area').style.display = 'none';
-        };
-
         // Allow pressing Enter in chat
         document.addEventListener('DOMContentLoaded', () => {
             const inp = document.getElementById('chat-input');
             if (inp) inp.addEventListener('keydown', e => {
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
             });
+
+            // Auto-load data on page ready (no bank sign-in needed)
+            loadTransactions(30);
         });
     </script>
 

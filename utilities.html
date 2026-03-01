@@ -1,44 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Utilities - Home Finance AI</title>
+    <title>Utilities - Fiserv CFO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
-
 <body>
-
     <header class="header">
         <div class="main-header">
-            <h1 class="logo">Home Finance AI</h1>
-            <button id="darkModeToggle" class="btn-primary">🌙 Dark Mode</button>
+            <h2 class="topheader"><a class="logo" href="index.html">Fiserv CFO</a></h2>
         </div>
-
-        <nav class="nav-tabs">
-            <ul>
-                <li><a href="banks.html" class="nav-btn">Banks</a></li>
-                <li><a href="utilities.html" class="nav-btn">Utilities</a></li>
-                <li><a href="school.html" class="nav-btn">School</a></li>
-                <li><a href="groceries.html" class="nav-btn">Groceries</a></li>
-                <li><a href="spending-analyzer.html" class="nav-btn">Spending Analyzer</a></li>
-                <li><a href="workflows.html" class="nav-btn">Workflows</a></li>
-                <li><a href="contact.html" class="nav-btn">Contact</a></li>
+        <nav class="centertabs">
+            <ul class="other_tabs1">
+                <li class="tab" id="banks" onclick="loadPage('banks')">Banks</li>
+                <li class="tab" id="groceries" onclick="loadPage('groceries')">Groceries</li>
+                <li class="tab" id="school" onclick="loadPage('school')">School</li>
+                <li class="tab" id="spending-analyzer" onclick="loadPage('spending-analyzer')">Spending Analyzer</li>
+                <li class="tab active" id="utilities" onclick="loadPage('utilities')">Utilities</li>
+                <li class="tab" id="work" onclick="loadPage('work')">Work</li>
             </ul>
         </nav>
     </header>
-
     <main>
-        <section class="feature-page">
-            <h2>Utilities</h2>
-            <p>
-                Manage all household utilities including electricity, water, gas, and internet, with automatic reminders and bill tracking.
-            </p>
+        <section class="page-hero">
+            <div>
+                <div class="sub-hero-badge">&#9889; Utilities Manager</div>
+                <h1 class="sub-hero-title">Household Utilities Hub</h1>
+                <p class="sub-hero-tagline">Never miss a bill again</p>
+                <p class="sub-hero-desc">Track all your household bills — electric, water, gas, internet, and more. Set auto-pay, monitor usage, and stay ahead of every due date.</p>
+            </div>
+            <div>
+                <img class="sub-hero-img" src="https://cdn.pixabay.com/photo/2016/10/28/12/18/electricity-1776246_640.jpg" alt="Utilities">
+            </div>
         </section>
+
+        <div class="stats-bar">
+            <div class="stat-card navy"><span class="stat-icon">&#128176;</span><div class="stat-label">Total Monthly</div><div class="stat-value">$554</div><div class="stat-sub">All 6 utilities combined</div></div>
+            <div class="stat-card blue"><span class="stat-icon">&#128197;</span><div class="stat-label">Due This Week</div><div class="stat-value">$127</div><div class="stat-sub">Electric bill due Mar 5</div></div>
+            <div class="stat-card green"><span class="stat-icon">&#9989;</span><div class="stat-label">Auto-Pay Active</div><div class="stat-value">5 / 6</div><div class="stat-sub">Internet needs attention</div></div>
+            <div class="stat-card orange"><span class="stat-icon">&#128200;</span><div class="stat-label">Avg Daily Cost</div><div class="stat-value">$18.48</div><div class="stat-sub">Based on 30-day month</div></div>
+        </div>
+
+        <div class="section-sub">Your Bills <span>+ Add Bill</span></div>
+        <div class="bill-grid">
+            <div class="bill-card">
+                <div class="bill-header">
+                    <div class="bill-icon">&#9889;</div>
+                    <div><div class="bill-name">Electricity</div><div class="bill-provider">Duke Energy</div></div>
+                </div>
+                <div><div class="bill-amount">$127.50</div><div class="bill-due">Due Mar 5 &mdash; 5 days away &bull; 892 kWh used</div></div>
+                <div class="bill-footer">
+                    <span class="badge badge-orange">Due Soon</span>
+                    <label class="toggle-wrap">Auto-Pay
+                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bill-card">
+                <div class="bill-header">
+                    <div class="bill-icon">&#128167;</div>
+                    <div><div class="bill-name">Water</div><div class="bill-provider">City Water Works</div></div>
+                </div>
+                <div><div class="bill-amount">$45.00</div><div class="bill-due">Due Mar 8 &mdash; 4,200 gallons used</div></div>
+                <div class="bill-footer">
+                    <span class="badge badge-blue">Upcoming</span>
+                    <label class="toggle-wrap">Auto-Pay
+                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bill-card">
+                <div class="bill-header">
+                    <div class="bill-icon">&#128293;</div>
+                    <div><div class="bill-name">Natural Gas</div><div class="bill-provider">National Gas Co.</div></div>
+                </div>
+                <div><div class="bill-amount">$89.00</div><div class="bill-due">Due Mar 10 &mdash; 42 therms used</div></div>
+                <div class="bill-footer">
+                    <span class="badge badge-blue">Upcoming</span>
+                    <label class="toggle-wrap">Auto-Pay
+                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bill-card">
+                <div class="bill-header">
+                    <div class="bill-icon">&#128246;</div>
+                    <div><div class="bill-name">Internet</div><div class="bill-provider">Comcast Xfinity</div></div>
+                </div>
+                <div><div class="bill-amount">$79.99</div><div class="bill-due">Due Mar 12 &mdash; 500 Mbps plan</div></div>
+                <div class="bill-footer">
+                    <span class="badge badge-red">Manual Pay</span>
+                    <label class="toggle-wrap">Auto-Pay
+                        <label class="toggle"><input type="checkbox"><span class="toggle-slider"></span></label>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bill-card">
+                <div class="bill-header">
+                    <div class="bill-icon">&#128241;</div>
+                    <div><div class="bill-name">Cell Phone</div><div class="bill-provider">Verizon Wireless</div></div>
+                </div>
+                <div><div class="bill-amount">$165.00</div><div class="bill-due">Due Mar 15 &mdash; 4 lines, unlimited</div></div>
+                <div class="bill-footer">
+                    <span class="badge badge-gray">Scheduled</span>
+                    <label class="toggle-wrap">Auto-Pay
+                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bill-card">
+                <div class="bill-header">
+                    <div class="bill-icon">&#127916;</div>
+                    <div><div class="bill-name">Streaming Bundle</div><div class="bill-provider">Netflix + Hulu + Spotify</div></div>
+                </div>
+                <div><div class="bill-amount">$47.97</div><div class="bill-due">Due Mar 20 &mdash; 3 services bundled</div></div>
+                <div class="bill-footer">
+                    <span class="badge badge-gray">Scheduled</span>
+                    <label class="toggle-wrap">Auto-Pay
+                        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="content-card">
+                <div class="content-card-title">&#128200; Usage vs Last Month</div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#9889; Electricity</span><span class="cat-amounts">892 kWh &mdash; &#9660; 8% vs Feb</span></div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:74%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128167; Water</span><span class="cat-amounts">4,200 gal &mdash; &#9650; 3% vs Feb</span></div>
+                    <div class="progress-wrap"><div class="progress-bar" style="width:60%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128293; Natural Gas</span><span class="cat-amounts">42 therms &mdash; &#9660; 15% vs Feb</span></div>
+                    <div class="progress-wrap"><div class="progress-bar green" style="width:55%"></div></div>
+                </div>
+                <div class="cat-row">
+                    <div class="cat-header"><span class="cat-name">&#128246; Internet Data</span><span class="cat-amounts">847 GB &mdash; &#9650; 12% vs Feb</span></div>
+                    <div class="progress-wrap"><div class="progress-bar" style="width:85%"></div></div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="content-card-title">&#128200; Payment History</div>
+                <div class="list-item"><div class="list-icon green">&#9889;</div><div class="list-info"><div class="list-name">Duke Energy &mdash; Electricity</div><div class="list-sub">Feb 5, 2026 &bull; Auto-Pay</div></div><div class="list-amount negative">&#8722;$134.20</div></div>
+                <div class="list-item"><div class="list-icon blue">&#128167;</div><div class="list-info"><div class="list-name">City Water Works</div><div class="list-sub">Feb 8, 2026 &bull; Auto-Pay</div></div><div class="list-amount negative">&#8722;$43.50</div></div>
+                <div class="list-item"><div class="list-icon orange">&#128293;</div><div class="list-info"><div class="list-name">National Gas Co.</div><div class="list-sub">Feb 10, 2026 &bull; Auto-Pay</div></div><div class="list-amount negative">&#8722;$104.75</div></div>
+                <div class="list-item"><div class="list-icon purple">&#128246;</div><div class="list-info"><div class="list-name">Comcast Xfinity</div><div class="list-sub">Feb 12, 2026 &bull; Manual</div></div><div class="list-amount negative">&#8722;$79.99</div></div>
+                <div class="list-item"><div class="list-icon teal">&#128241;</div><div class="list-info"><div class="list-name">Verizon Wireless</div><div class="list-sub">Feb 15, 2026 &bull; Auto-Pay</div></div><div class="list-amount negative">&#8722;$165.00</div></div>
+                <div class="list-item"><div class="list-icon gray">&#127916;</div><div class="list-info"><div class="list-name">Streaming Bundle</div><div class="list-sub">Feb 20, 2026 &bull; Auto-Pay</div></div><div class="list-amount negative">&#8722;$47.97</div></div>
+            </div>
+        </div>
+
+        <div class="quick-actions">
+            <button class="action-btn">&#10133; Add Bill</button>
+            <button class="action-btn">&#9989; Enable All Auto-Pay</button>
+            <button class="action-btn">&#128200; Usage Report</button>
+            <button class="action-btn">&#128176; Set Budget Alerts</button>
+            <button class="action-btn">&#128197; View Calendar</button>
+        </div>
     </main>
-
+    <footer>
+        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
+    </footer>
 </body>
-
 </html>
