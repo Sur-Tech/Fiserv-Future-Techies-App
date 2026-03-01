@@ -408,8 +408,16 @@ def calculate_stats(transactions):
         else:
             total_income += abs(amount)
         raw_cat  = tx.get("category")
-        category = (raw_cat[0] if isinstance(raw_cat, list) and raw_cat
-                    else str(raw_cat) if raw_cat else "Other")
+        # Plaid v2 API uses personal_finance_category.primary instead of legacy category
+        pfc = tx.get("personal_finance_category")
+        if pfc and isinstance(pfc, dict) and pfc.get("primary"):
+            category = pfc["primary"].replace("_", " ").title()
+        elif isinstance(raw_cat, list) and raw_cat:
+            category = raw_cat[0]
+        elif raw_cat:
+            category = str(raw_cat)
+        else:
+            category = "Other"
         categories[category] = categories.get(category, 0.0) + amount
         if merchant not in merchants:
             merchants[merchant] = {"count": 0, "total": 0.0}
@@ -464,8 +472,13 @@ def detect_recurring_transactions(transactions):
             continue
         avg_amount = sum(amounts) / len(amounts)
         raw_cat = txs[0].get("category")
-        category = (raw_cat[0] if isinstance(raw_cat, list) and raw_cat
-                    else str(raw_cat) if raw_cat else "Other")
+        pfc0 = txs[0].get("personal_finance_category")
+        if pfc0 and isinstance(pfc0, dict) and pfc0.get("primary"):
+            category = pfc0["primary"].replace("_", " ").title()
+        elif isinstance(raw_cat, list) and raw_cat:
+            category = raw_cat[0]
+        else:
+            category = str(raw_cat) if raw_cat else "Other"
         amount_variance = max(abs(a - avg_amount) for a in amounts) / avg_amount if avg_amount else 1
         recurring.append({
             "merchant":        txs[0].get("merchant_name") or txs[0].get("name") or key,
@@ -490,8 +503,13 @@ def detect_anomalies(transactions, threshold=2.0):
         if amount <= 0:
             continue
         raw_cat = tx.get("category")
-        cat = (raw_cat[0] if isinstance(raw_cat, list) and raw_cat
-               else str(raw_cat) if raw_cat else "Other")
+        pfc = tx.get("personal_finance_category")
+        if pfc and isinstance(pfc, dict) and pfc.get("primary"):
+            cat = pfc["primary"].replace("_", " ").title()
+        elif isinstance(raw_cat, list) and raw_cat:
+            cat = raw_cat[0]
+        else:
+            cat = str(raw_cat) if raw_cat else "Other"
         cat_groups[cat].append((amount, tx))
 
     anomalies = []

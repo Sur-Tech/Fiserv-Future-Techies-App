@@ -269,7 +269,10 @@ function renderTransactions(transactions, append) {
     const isDebit = amount > 0;
     const sign    = isDebit ? "-" : "+";
     const cls     = isDebit ? "tx-debit" : "tx-credit";
-    const cat     = Array.isArray(tx.category) ? tx.category[0] : (tx.category || "Other");
+    const pfc = tx.personal_finance_category;
+    const cat = (pfc && pfc.primary)
+      ? pfc.primary.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+      : (Array.isArray(tx.category) ? tx.category[0] : (tx.category || "Other"));
     const pending = tx.pending
       ? '<span class="tx-pending">Pending</span>'
       : "";
