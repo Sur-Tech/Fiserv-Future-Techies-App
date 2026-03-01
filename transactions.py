@@ -542,7 +542,7 @@ def _fmt_budgets(budgets):
 
 
 def gemini_spending_report(stats, budgets, period_days):
-    prompt = f"""You are CashLens AI, a personal financial advisor writing a report directly to the user.
+    prompt = f"""You are Domus, a personal financial advisor writing a report directly to the user.
 Be warm, direct, and specific. Use actual dollar amounts from their data.
 Do NOT give generic advice -- reference THEIR specific spending habits.
 Use clear sections with emoji headers. Keep it under 400 words.
@@ -622,7 +622,7 @@ def gemini_alert(stats, budgets):
         for o in over_budget
     ) or "  No individual category overages."
     cash_note = "NEGATIVE -- spending more than income recorded!" if stats["net_cash_flow"] < 0 else "positive"
-    prompt = f"""You are CashLens AI sending an urgent but caring spending alert to a user.
+    prompt = f"""You are Domus sending an urgent but caring spending alert to a user.
 Be specific, direct, and helpful. Under 150 words. Use emoji.
 OVERSPENT CATEGORIES:\n{over_text}
 NET CASH FLOW: ${stats['net_cash_flow']:.2f} ({cash_note})
@@ -635,7 +635,7 @@ Write a short alert that:
 
 def gemini_chat(user_message, stats, budgets):
     safe_msg = guard_prompt_injection(sanitize_text(user_message, _MAX_CHAT_MESSAGE_LEN))
-    prompt = f"""You are CashLens AI, a friendly personal financial advisor.
+    prompt = f"""You are Domus, a friendly personal financial advisor.
 Answer the user's question using their actual spending data below.
 Be conversational and specific. Under 200 words.
 Only discuss topics related to personal finance and the data provided.
@@ -707,7 +707,7 @@ def _resolve_transactions(user_id, access_token, days):
 
 @app.route("/")
 def home():
-    return _ok(app="CashLens AI -- Flask + Plaid + Gemini", version="4.0",
+    return _ok(app="Domus -- Flask + Plaid + Gemini", version="4.0",
                simulation_mode=SIMULATION_MODE,
                endpoints=[
                    "POST /create_link_token","POST /exchange_token","GET /accounts",
@@ -737,7 +737,7 @@ def create_link_token():
         return _ok(link_token="fake-link-token-for-testing", simulation_mode=True)
     try:
         req  = LinkTokenCreateRequest(user=LinkTokenCreateRequestUser(client_user_id=user_id),
-                                      client_name="CashLens AI", products=[Products("transactions")],
+                                      client_name="Domus", products=[Products("transactions")],
                                       country_codes=[CountryCode("US")], language="en")
         resp = plaid_client.link_token_create(req)
         return _ok(link_token=resp.link_token)
@@ -1009,7 +1009,7 @@ def server_error(_e):   return _error(500, "Internal server error")
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("  CashLens AI -- Flask + Plaid + Gemini  v4.0")
+    print("  Domus -- Flask + Plaid + Gemini  v4.0")
     print("=" * 60)
     print(f"  Plaid environment : {PLAID_ENV}")
     print(f"  Simulation mode   : {SIMULATION_MODE}")

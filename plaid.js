@@ -364,7 +364,7 @@ async function sendChat() {
 
   // Thinking indicator
   output.insertAdjacentHTML("beforeend", `
-    <div class="chat-msg-thinking" id="chat-thinking">CashLens AI is thinking…</div>`);
+    <div class="chat-msg-thinking" id="chat-thinking">Domus is thinking…</div>`);
 
   input.value = "";
   output.scrollTop = output.scrollHeight;

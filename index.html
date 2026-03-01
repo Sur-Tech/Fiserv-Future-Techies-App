@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Fiserv CFO</title>
+    <title>Domus</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@
     <header class="header">
         <div class="main-header">
             <h2 class="topheader">
-                <a class="logo" href="index.html">Fiserv CFO</a>
+                <a class="logo" href="index.html">Domus</a>
             </h2>
         </div>
 
@@ -48,7 +48,7 @@
         <section class="hero-banner">
             <div class="hero-content">
                 <div class="hero-badge">&#127942; Fiserv Fintech Challenge</div>
-                <h1 class="hero-main-title">Fiserv CFO</h1>
+                <h1 class="hero-main-title">Domus</h1>
                 <p class="hero-tagline">Your Smart Companion for every part of daily financial life</p>
                 <p class="hero-description">
                     A cash-management platform powered by an AI multi-agent orchestrator that acts like a personal
@@ -131,8 +131,76 @@
 
     <!-- Footer -->
     <footer>
-        <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
+        <p>&copy; 2024 <strong>Domus</strong> &mdash; Fiserv Future Techies Challenge</p>
     </footer>
+
+    <!-- =========================================================
+         VOICE REMINDER BUTTON
+         ========================================================= -->
+    <button id="voice-btn" class="voice-fab" onclick="VoiceReminder.toggle()" title="Voice ON — click to mute">&#x1F50A;</button>
+
+    <!-- =========================================================
+         TRANSFER MONEY MODAL (placeholder)
+         ========================================================= -->
+    <div id="transfer-modal" class="modal-overlay" onclick="if(event.target===this)TransferModal.close()">
+        <div class="modal-card">
+
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <span class="modal-header-icon">💸</span>
+                    <div>
+                        <div class="modal-title">Transfer Money</div>
+                        <div class="modal-subtitle">Secure · Instant · Demo</div>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="TransferModal.close()">✕</button>
+            </div>
+
+            <div id="transfer-form" class="modal-body">
+                <div class="modal-field">
+                    <label class="modal-label">From Account</label>
+                    <select id="transfer-from" class="modal-select">
+                        <option value="checking">Chase Checking (••4521) — $24,847.32</option>
+                        <option value="savings">Chase Savings (••7890) — $18,500.00</option>
+                        <option value="premier">JP Morgan Premier (••2341) — $22,100.45</option>
+                        <option value="business">PNC Business (••6789) — $3,800.00</option>
+                    </select>
+                </div>
+
+                <div class="modal-field">
+                    <label class="modal-label">To (Recipient or Account)</label>
+                    <input id="transfer-to" class="modal-input" type="text" placeholder="Name, account number, or email">
+                </div>
+
+                <div class="modal-field-row">
+                    <div class="modal-field">
+                        <label class="modal-label">Amount ($)</label>
+                        <input id="transfer-amount" class="modal-input" type="number" placeholder="0.00" min="0.01" step="0.01">
+                    </div>
+                    <div class="modal-field">
+                        <label class="modal-label">Note (optional)</label>
+                        <input id="transfer-note" class="modal-input" type="text" placeholder="What's this for?">
+                    </div>
+                </div>
+
+                <div class="modal-security-note">
+                    <span>🔒</span> This is a demo transfer — no real money will move.
+                </div>
+
+                <button class="modal-submit" onclick="TransferModal.submit()">
+                    Transfer Money →
+                </button>
+            </div>
+
+            <div id="transfer-success" class="modal-success" style="display:none">
+                <div class="success-checkmark">✅</div>
+                <h3 class="success-title">Transfer Submitted!</h3>
+                <p id="transfer-success-amount" class="success-amount"></p>
+                <p class="success-sub">Your transfer is being processed securely.</p>
+            </div>
+
+        </div>
+    </div>
 
     <!-- =========================================================
          AI CHAT WIDGET (persists across all pages)
@@ -140,7 +208,7 @@
     <div id="chat-widget">
 
         <!-- Floating Action Button -->
-        <button class="chat-fab" id="chat-fab" onclick="ChatWidget.toggle()" title="Chat with CashLens AI">
+        <button class="chat-fab" id="chat-fab" onclick="ChatWidget.toggle()" title="Chat with Domus">
             <span class="chat-fab-icon">💬</span>
             <span class="chat-fab-label">AI Chat</span>
         </button>
@@ -153,7 +221,7 @@
                 <div class="chat-panel-title">
                     <div class="chat-bot-avatar">🤖</div>
                     <div>
-                        <div class="chat-panel-name">CashLens AI</div>
+                        <div class="chat-panel-name">Domus</div>
                         <div class="chat-panel-status" id="chat-status">● Ready</div>
                     </div>
                 </div>
@@ -171,7 +239,7 @@
                 <div class="chat-typing-bubble">
                     <span></span><span></span><span></span>
                 </div>
-                <div class="chat-typing-label">CashLens AI is thinking…</div>
+                <div class="chat-typing-label">Domus is thinking…</div>
             </div>
 
             <!-- Suggested Prompts -->

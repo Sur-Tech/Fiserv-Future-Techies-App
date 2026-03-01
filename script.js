@@ -196,7 +196,7 @@ const ChatWidget = {
                 <div class="chat-bubble ai">
                     <div class="chat-avatar">🤖</div>
                     <div class="chat-content">
-                        <div class="chat-text">Hi! I'm <strong>CashLens AI</strong>, your personal finance assistant.<br><br>
+                        <div class="chat-text">Hi! I'm <strong>Domus</strong>, your personal finance assistant.<br><br>
                         Ask me anything about budgeting, spending habits, or saving goals. Use the quick prompts below to get started!</div>
                     </div>
                 </div>`;
@@ -363,6 +363,7 @@ function loadPage(page) {
 
             _currentPage = page;
             Tracker.recordVisit(page);
+            VoiceReminder.onPageLoad(page);
         })
         .catch(err => {
             console.error('loadPage error:', err);
@@ -378,10 +379,187 @@ function loadPage(page) {
 
 
 // =============================================
+// VOICE REMINDER (Web Speech API)
+// =============================================
+
+const VoiceReminder = {
+    KEY: 'domus_voice',
+
+    isEnabled() {
+        return localStorage.getItem(this.KEY) !== 'off';
+    },
+
+    toggle() {
+        const nowEnabled = !this.isEnabled();
+        localStorage.setItem(this.KEY, nowEnabled ? 'on' : 'off');
+        this.updateUI();
+        if (nowEnabled) {
+            this.speak('Voice reminders enabled. I will keep you updated.');
+        }
+    },
+
+    speak(text, rate, pitch) {
+        if (!this.isEnabled() || !window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.rate   = rate  || 0.93;
+        utt.pitch  = pitch || 1.0;
+        utt.volume = 0.88;
+
+        const setVoice = () => {
+            const voices = speechSynthesis.getVoices();
+            const v = voices.find(v =>
+                /Samantha|Google US English|Google UK English Female/i.test(v.name)
+            ) || voices.find(v => v.lang && v.lang.startsWith('en')) || null;
+            if (v) utt.voice = v;
+            speechSynthesis.speak(utt);
+        };
+
+        // Chrome loads voices asynchronously
+        if (speechSynthesis.getVoices().length > 0) {
+            setVoice();
+        } else {
+            speechSynthesis.onvoiceschanged = () => { setVoice(); speechSynthesis.onvoiceschanged = null; };
+        }
+    },
+
+    greet() {
+        if (!this.isEnabled()) return;
+        const hour = new Date().getHours();
+        const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+        const top = Tracker.getTopPage();
+        const msg = top
+            ? `${greeting}! Welcome to Domus. Your most visited section is ${top}.`
+            : `${greeting}! Welcome to Domus, your personal finance assistant.`;
+        this.speak(msg);
+    },
+
+    remindBills() {
+        // Read bill cards already rendered in the DOM
+        const bills = document.querySelectorAll('.bill-card');
+        const dueSoon = [];
+        bills.forEach(card => {
+            const badge = card.querySelector('.badge-red, .badge-orange');
+            if (!badge) return;
+            const name   = card.querySelector('.bill-name')?.textContent?.trim() || 'a bill';
+            const amount = card.querySelector('.bill-amount')?.textContent?.trim() || '';
+            dueSoon.push(`${name}${amount ? ' for ' + amount : ''}`);
+        });
+
+        if (!dueSoon.length) {
+            this.speak('Your bills are all up to date. No urgent payments this week.');
+        } else if (dueSoon.length === 1) {
+            this.speak(`Reminder: ${dueSoon[0]} is due soon.`);
+        } else {
+            this.speak(`You have ${dueSoon.length} bills due soon: ${dueSoon.join(', ')}.`);
+        }
+    },
+
+    onPageLoad(page) {
+        if (!this.isEnabled()) return;
+        const msgs = {
+            banks:     "You're viewing your bank accounts. Total balance is sixty-nine thousand dollars.",
+            groceries: "Grocery budget check. You have two hundred and thirteen dollars remaining this month.",
+            school:    "Education update. Your next tuition payment of six thousand dollars is due soon.",
+            work:      "Work finances. Monthly income is eighty-five hundred dollars. Net after expenses is seventy-two fifty-three."
+        };
+        if (page === 'utilities') {
+            setTimeout(() => this.remindBills(), 700);
+        } else if (msgs[page]) {
+            this.speak(msgs[page]);
+        }
+    },
+
+    updateUI() {
+        const btn = document.getElementById('voice-btn');
+        if (!btn) return;
+        const on = this.isEnabled();
+        btn.textContent = on ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+        btn.title       = on ? 'Voice ON \u2014 click to mute' : 'Voice OFF \u2014 click to enable';
+        btn.classList.toggle('muted', !on);
+    },
+
+    init() {
+        this.updateUI();
+    }
+};
+
+
+// =============================================
+// TRANSFER MODAL (placeholder)
+// =============================================
+
+const TransferModal = {
+    open() {
+        const modal = document.getElementById('transfer-modal');
+        if (!modal) return;
+        this.reset();
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        const firstInput = modal.querySelector('input, select');
+        if (firstInput) setTimeout(() => firstInput.focus(), 300);
+    },
+
+    close() {
+        const modal = document.getElementById('transfer-modal');
+        if (!modal) return;
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+    },
+
+    submit() {
+        const from   = document.getElementById('transfer-from')?.value;
+        const to     = document.getElementById('transfer-to')?.value?.trim();
+        const amount = document.getElementById('transfer-amount')?.value;
+
+        if (!from || !to || !amount || parseFloat(amount) <= 0) {
+            // Shake the submit button visually
+            const btn = document.querySelector('.modal-submit');
+            if (btn) {
+                btn.style.animation = 'shake 0.4s ease';
+                setTimeout(() => { btn.style.animation = ''; }, 500);
+            }
+            return;
+        }
+
+        // Show success state
+        const form    = document.getElementById('transfer-form');
+        const success = document.getElementById('transfer-success');
+        const amt     = parseFloat(amount).toFixed(2);
+        if (form)    form.style.display    = 'none';
+        if (success) success.style.display = 'flex';
+
+        const successAmt = document.getElementById('transfer-success-amount');
+        if (successAmt) successAmt.textContent = `$${amt} to ${to}`;
+
+        VoiceReminder.speak(`Transfer of ${amt} dollars to ${to} submitted successfully.`);
+
+        setTimeout(() => this.close(), 2800);
+    },
+
+    reset() {
+        const form    = document.getElementById('transfer-form');
+        const success = document.getElementById('transfer-success');
+        if (form)    form.style.display    = '';
+        if (success) success.style.display = 'none';
+        ['transfer-to', 'transfer-amount', 'transfer-note'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const sel = document.getElementById('transfer-from');
+        if (sel) sel.selectedIndex = 0;
+    }
+};
+
+
+// =============================================
 // INIT ON DOM READY
 // =============================================
 
 document.addEventListener('DOMContentLoaded', () => {
     Tracker.init();
     ChatWidget.init();
+    VoiceReminder.init();
+    // Greet the user after page is fully rendered
+    setTimeout(() => VoiceReminder.greet(), 1200);
 });

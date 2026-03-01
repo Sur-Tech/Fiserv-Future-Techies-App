@@ -1509,3 +1509,230 @@ footer strong {
     .chat-fab-label { display: none; }
     .chat-fab { border-radius: 50%; width: 52px; height: 52px; padding: 0; justify-content: center; }
 }
+
+/* =============================================
+   VOICE REMINDER FAB
+   ============================================= */
+
+.voice-fab {
+    position: fixed;
+    bottom: 28px;
+    right: 148px;   /* sits left of the chat FAB */
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy-deep), var(--navy-mid));
+    color: white;
+    border: none;
+    font-size: 19px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 18px rgba(0, 31, 63, 0.38);
+    z-index: 1000;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.2s ease, background 0.2s;
+}
+
+.voice-fab:hover {
+    transform: scale(1.12);
+    box-shadow: 0 8px 28px rgba(0, 31, 63, 0.5);
+}
+
+.voice-fab.muted {
+    background: var(--gray-400);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+@media (max-width: 480px) {
+    .voice-fab { right: 80px; bottom: 18px; width: 42px; height: 42px; font-size: 16px; }
+}
+
+/* =============================================
+   TRANSFER MONEY MODAL
+   ============================================= */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.58);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-card {
+    background: white;
+    border-radius: 22px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.32), 0 8px 24px rgba(0, 31, 63, 0.18);
+    overflow: hidden;
+    transform: scale(0.9) translateY(24px);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.open .modal-card {
+    transform: scale(1) translateY(0);
+}
+
+/* --- Modal Header --- */
+.modal-header {
+    background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy-mid) 100%);
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid var(--orange);
+}
+
+.modal-header-title {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.modal-header-icon {
+    font-size: 26px;
+    width: 46px; height: 46px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+}
+
+.modal-title    { font-size: 17px; font-weight: 800; color: white; letter-spacing: -0.3px; }
+.modal-subtitle { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 2px; font-weight: 500; }
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+
+.modal-close-btn:hover { background: rgba(255, 255, 255, 0.22); color: white; }
+
+/* --- Modal Body --- */
+.modal-body {
+    padding: 24px 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+
+.modal-field-row {
+    display: flex;
+    gap: 14px;
+}
+
+.modal-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-input,
+.modal-select {
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    padding: 11px 14px;
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-dark);
+    background: var(--gray-50);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.modal-input:focus,
+.modal-select:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(245, 128, 37, 0.12);
+    background: white;
+}
+
+.modal-input::placeholder { color: var(--gray-400); }
+
+.modal-security-note {
+    font-size: 12px;
+    color: var(--gray-500);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.modal-submit {
+    background: linear-gradient(135deg, var(--orange), var(--orange-light));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 16px rgba(245, 128, 37, 0.38);
+    letter-spacing: 0.2px;
+}
+
+.modal-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(245, 128, 37, 0.48);
+}
+
+/* --- Modal Success State --- */
+.modal-success {
+    padding: 48px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    animation: fadeInUp 0.4s ease-out both;
+}
+
+.success-checkmark { font-size: 56px; line-height: 1; }
+
+.success-title  { font-size: 22px; font-weight: 800; color: var(--text-dark); letter-spacing: -0.5px; }
+.success-amount { font-size: 15px; font-weight: 600; color: var(--orange); }
+.success-sub    { font-size: 13.5px; color: var(--gray-500); }
+
+/* --- Shake animation for form validation --- */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%       { transform: translateX(-6px); }
+    40%       { transform: translateX(6px); }
+    60%       { transform: translateX(-4px); }
+    80%       { transform: translateX(4px); }
+}

@@ -20,6 +20,6 @@ def serve_file(filename):
     return "File not found", 404
 
 if __name__ == '__main__':
-    print("Starting Fiserv CFO Application...")
+    print("Starting Domus Application...")
     print("Open your browser to: http://localhost:8080")
     app.run(debug=True, host='0.0.0.0', port=8080)
