@@ -1,30 +1,3 @@
-"""
-CashLens AI v4.0 -- Production-Grade Flask Backend
-Flask + Plaid + Gemini + SQLite
-
-Key fixes from v3.0:
-  - Timing-safe API key comparison (hmac.compare_digest)
-  - User-ID sanitization blocks injection into DB/AI prompts
-  - Prompt injection guard on /chat user messages
-  - init_db() called at import time so WSGI servers initialise the DB
-  - SQLite WAL mode + indexes + busy_timeout for concurrency safety
-  - DB writes wrapped in try/rollback for atomicity
-  - calculate_stats() None-safety propagated to all callers
-  - _fetch_all_transactions() raises PlaidFetchError instead of returning Flask tuples
-  - _get_transactions()/_resolve_transactions() eliminate 5x duplicated branching
-  - validate_int_param() errors on non-integer input (was silently defaulting)
-  - gemini_budget_recommendations() validates AI values (type, range, sanitize)
-  - auto_set_budgets() protects user-set budgets from AI overwrite
-  - Request body size capped at 64 KB (MAX_CONTENT_LENGTH)
-  - /health endpoint for load-balancer probes
-  - _ok()/_error() helpers make every response shape consistent
-  - 413 error handler for oversized requests
-  - Pagination safety cap: max 20 pages (~10000 transactions)
-  - Gemini max_output_tokens + timeout to prevent runaway calls
-  - Regex-based JSON extraction from Gemini budget response
-  - All user-supplied strings sanitized before DB storage or AI embedding
-"""
-
 import hmac
 import json
 import logging
@@ -34,10 +7,11 @@ import re
 import sqlite3
 import time
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types as genai_types
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
@@ -63,10 +37,9 @@ GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
 GEMINI_TIMEOUT    = int(os.getenv("GEMINI_TIMEOUT", "30"))
 
-gemini_model = None
+gemini_client = None
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel(GEMINI_MODEL_NAME)
+    gemini_client = genai.Client(api_key=GEMINI_API_KEY)
     logger.info("Gemini AI ready (model=%s).", GEMINI_MODEL_NAME)
 else:
     logger.warning("GEMINI_API_KEY not set -- AI features disabled.")
@@ -215,7 +188,7 @@ init_db()
 
 
 def save_token(user_id, access_token, item_id):
-    now  = datetime.utcnow().isoformat()
+    now  = datetime.now(timezone.utc).isoformat()
     conn = get_db()
     try:
         conn.execute("""
@@ -256,7 +229,7 @@ def save_budget(user_id, category, monthly_limit, set_by="ai"):
         raise ValueError(f"set_by must be 'ai' or 'user', got {set_by!r}")
     if monthly_limit < 0:
         raise ValueError("monthly_limit must be >= 0")
-    now  = datetime.utcnow().isoformat()
+    now  = datetime.now(timezone.utc).isoformat()
     conn = get_db()
     try:
         conn.execute("""
@@ -282,7 +255,7 @@ def load_budgets(user_id):
 
 
 def save_report(user_id, report_type, report_text, stats):
-    now  = datetime.utcnow().isoformat()
+    now  = datetime.now(timezone.utc).isoformat()
     conn = get_db()
     try:
         conn.execute("""
@@ -394,7 +367,7 @@ def generate_fake_transactions(days=30, num_transactions=90):
     txs = []
     for i in range(num_transactions):
         days_ago     = random.randint(0, days)
-        tx_date      = datetime.utcnow() - timedelta(days=days_ago)
+        tx_date      = datetime.now(timezone.utc) - timedelta(days=days_ago)
         category     = random.choice(list(_MERCHANTS.keys()))
         name, lo, hi = random.choice(_MERCHANTS[category])
         txs.append({
@@ -540,13 +513,13 @@ def detect_anomalies(transactions, threshold=2.0):
 
 
 def gemini_generate(prompt):
-    if not gemini_model:
+    if not gemini_client:
         return "AI unavailable -- set GEMINI_API_KEY in your .env file."
     try:
-        resp = gemini_model.generate_content(
-            prompt,
-            generation_config=genai.types.GenerationConfig(max_output_tokens=800, temperature=0.7),
-            request_options={"timeout": GEMINI_TIMEOUT},
+        resp = gemini_client.models.generate_content(
+            model=GEMINI_MODEL_NAME,
+            contents=prompt,
+            config=genai_types.GenerateContentConfig(max_output_tokens=800, temperature=0.7),
         )
         return (getattr(resp, "text", "") or "").strip()
     except Exception as e:
@@ -683,7 +656,7 @@ class PlaidFetchError(Exception):
 
 
 def _fetch_all_transactions(access_token, days):
-    end_date   = datetime.utcnow().date()
+    end_date   = datetime.now(timezone.utc).date()
     start_date = end_date - timedelta(days=days)
     try:
         first  = plaid_client.transactions_get(
@@ -754,8 +727,8 @@ def health():
     except Exception:
         db_ok = False
     return jsonify({"status": "ok" if db_ok else "degraded", "db": "ok" if db_ok else "error",
-                    "simulation_mode": SIMULATION_MODE, "gemini": "ok" if gemini_model else "disabled",
-                    "timestamp": datetime.utcnow().isoformat()}), (200 if db_ok else 503)
+                    "simulation_mode": SIMULATION_MODE, "gemini": "ok" if gemini_client else "disabled",
+                    "timestamp": datetime.now(timezone.utc).isoformat()}), (200 if db_ok else 503)
 
 
 @app.route("/create_link_token", methods=["POST"])
@@ -857,7 +830,7 @@ def get_report():
     report_text = gemini_spending_report(stats, budgets, days)
     save_report(user_id, "full_report", report_text, stats)
     return _ok(report=report_text, stats=stats, period_days=days,
-               generated_at=datetime.utcnow().isoformat())
+               generated_at=datetime.now(timezone.utc).isoformat())
 
 
 @app.route("/alert", methods=["GET"])
@@ -1044,7 +1017,7 @@ if __name__ == "__main__":
     print("=" * 60)
     print(f"  Plaid environment : {PLAID_ENV}")
     print(f"  Simulation mode   : {SIMULATION_MODE}")
-    print(f"  Gemini AI         : {'Ready' if gemini_model else 'Disabled (set GEMINI_API_KEY)'}")
+    print(f"  Gemini AI         : {'Ready' if gemini_client else 'Disabled (set GEMINI_API_KEY)'}")
     print(f"  Auth              : {'API_KEY set' if API_KEY else 'DISABLED (set API_KEY in .env)'}")
     print(f"  Token storage     : {DB_PATH}")
     print("=" * 60)
