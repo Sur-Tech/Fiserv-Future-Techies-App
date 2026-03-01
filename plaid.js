@@ -6,7 +6,9 @@
  * Backend must be running at API_BASE (default: http://localhost:5000)
  */
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? "http://localhost:5000"
+  : "";
 
 // State kept in memory for the session
 const state = {
@@ -130,6 +132,16 @@ async function exchangeToken(publicToken) {
   }
 }
 
+// ─── Sandbox Auto-Connect ─────────────────────────────────────────────────────
+
+async function sandboxInit() {
+  try {
+    await apiFetch("/sandbox/init", { method: "POST" });
+  } catch (_) {
+    // silently fall back to demo data
+  }
+}
+
 // ─── Load Transactions ────────────────────────────────────────────────────────
 
 async function loadTransactions(days) {
@@ -144,6 +156,12 @@ async function loadTransactions(days) {
   if (breakdownBars) breakdownBars.innerHTML = '<p class="sa-loading">Loading categories…</p>';
 
   try {
+    // Auto-connect Plaid sandbox on first load
+    if (!state.connected) {
+      await sandboxInit();
+      state.connected = true;
+    }
+
     const data = await apiFetch(`/transactions?days=${days}&page_size=${state.pageSize}&offset=0`);
 
     state.totalTransactions = data.total_transactions;

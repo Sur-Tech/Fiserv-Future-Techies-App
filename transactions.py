@@ -25,6 +25,7 @@ from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchan
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.model.products import Products
+from plaid.model.sandbox_public_token_create_request import SandboxPublicTokenCreateRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
 from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 
@@ -129,7 +130,7 @@ def _log_and_tag(response):
     return response
 
 
-DB_PATH = os.getenv("SQLITE_PATH", "cashlens.db")
+DB_PATH = os.getenv("SQLITE_PATH", "/tmp/domus.db" if os.getenv("VERCEL") else "cashlens.db")
 
 
 def get_db():
@@ -710,7 +711,7 @@ def home():
     return _ok(app="Domus -- Flask + Plaid + Gemini", version="4.0",
                simulation_mode=SIMULATION_MODE,
                endpoints=[
-                   "POST /create_link_token","POST /exchange_token","GET /accounts",
+                   "POST /create_link_token","POST /exchange_token","POST /sandbox/init","GET /accounts",
                    "GET /transactions","GET /report","GET /alert","GET /recurring",
                    "GET /anomalies","POST /budgets/auto","POST /budgets/set",
                    "GET /budgets","POST /chat","GET /history",
@@ -769,6 +770,42 @@ def exchange_token():
     except Exception:
         logger.exception("Unexpected error in /exchange_token")
         return _error(500, "Internal server error")
+
+
+@app.route("/sandbox/init", methods=["POST"])
+@require_auth
+def sandbox_init():
+    """Auto-connect a Plaid sandbox institution without going through Link UI."""
+    user_id = get_user_id()
+    # If already connected with a real token, skip
+    existing_token, _ = load_token(user_id)
+    if existing_token and existing_token != "fake-access-token":
+        return _ok(message="Already connected to sandbox", already_connected=True)
+    if SIMULATION_MODE:
+        save_token(user_id, "fake-access-token", "fake-item-id")
+        return _ok(message="Simulation mode — using demo data", simulation_mode=True)
+    try:
+        # Create a sandbox public token for Chase (ins_109508)
+        pt_resp = plaid_client.sandbox_public_token_create(
+            SandboxPublicTokenCreateRequest(
+                institution_id="ins_109508",
+                initial_products=[Products("transactions")],
+            )
+        )
+        # Exchange it for a real sandbox access token
+        ex_resp = plaid_client.item_public_token_exchange(
+            ItemPublicTokenExchangeRequest(public_token=pt_resp.public_token)
+        )
+        save_token(user_id, ex_resp.access_token, ex_resp.item_id)
+        return _ok(message="Sandbox bank connected automatically")
+    except ApiException as e:
+        logger.warning("Sandbox init Plaid error — falling back to demo data: %s", e)
+        save_token(user_id, "fake-access-token", "fake-item-id")
+        return _ok(message="Using demo data (Plaid sandbox unavailable)", simulation_mode=True)
+    except Exception:
+        logger.exception("Unexpected error in /sandbox/init")
+        save_token(user_id, "fake-access-token", "fake-item-id")
+        return _ok(message="Using demo data", simulation_mode=True)
 
 
 @app.route("/accounts", methods=["GET"])

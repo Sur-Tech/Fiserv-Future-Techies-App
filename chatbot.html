@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Domus – AI Chatbot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Chatbot Page ── */
+        .cb-main {
+            min-height: calc(100vh - 68px - 60px);
+            display: flex;
+            flex-direction: column;
+            background: #f0f4f8;
+        }
+
+        /* Hero */
+        .cb-hero {
+            background: linear-gradient(140deg, #000d1f 0%, #001F3F 55%, #0d3b6e 100%);
+            padding: 48px 40px 52px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cb-hero::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,120,0,0.18) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .cb-badge {
+            display: inline-block;
+            background: rgba(255,120,0,0.15);
+            border: 1px solid rgba(255,120,0,0.4);
+            color: #ff7800;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 16px;
+        }
+        .cb-hero-title {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            color: #fff;
+            margin: 0 0 10px;
+            letter-spacing: -0.03em;
+        }
+        .cb-hero-subtitle {
+            color: rgba(255,255,255,0.65);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        /* ── Chat Container ── */
+        .cb-container {
+            max-width: 860px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 20px 40px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* ── Chat Panel ── */
+        .cb-panel {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,31,63,0.10);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Panel Header */
+        .cb-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 24px;
+            border-bottom: 1px solid #e8edf2;
+            background: #fff;
+        }
+        .cb-avatar {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #001F3F, #0d3b6e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        .cb-panel-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #001F3F;
+        }
+        .cb-panel-status {
+            font-size: 12px;
+            color: #22c55e;
+            font-weight: 500;
+        }
+        .cb-header-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+        .cb-action-btn {
+            background: #f0f4f8;
+            border: none;
+            border-radius: 8px;
+            padding: 7px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+        }
+        .cb-action-btn:hover { background: #e2e8f0; color: #001F3F; }
+
+        /* Messages area */
+        .cb-messages {
+            flex: 1;
+            min-height: 440px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+
+        /* Bubbles */
+        .cb-msg {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14.5px;
+            line-height: 1.55;
+            word-break: break-word;
+        }
+        .cb-msg-user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #001F3F, #0d3b6e);
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+        .cb-msg-ai {
+            align-self: flex-start;
+            background: #f1f5f9;
+            color: #1e293b;
+            border-bottom-left-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .cb-msg-ai.error { background: #fef2f2; color: #dc2626; }
+
+        /* Typing indicator */
+        .cb-typing {
+            align-self: flex-start;
+            display: none;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 16px;
+            background: #f1f5f9;
+            border-radius: 16px;
+            border-bottom-left-radius: 4px;
+        }
+        .cb-typing.visible { display: flex; }
+        .cb-typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        .cb-typing-dots span {
+            width: 7px;
+            height: 7px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: cb-bounce 1.3s infinite;
+        }
+        .cb-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .cb-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes cb-bounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+        .cb-typing-label {
+            font-size: 12px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Quick chips */
+        .cb-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0 24px 16px;
+        }
+        .cb-chip {
+            background: #f0f4f8;
+            border: 1px solid #e2e8f0;
+            border-radius: 100px;
+            padding: 8px 16px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            font-weight: 500;
+        }
+        .cb-chip:hover {
+            background: #001F3F;
+            color: #fff;
+            border-color: #001F3F;
+        }
+
+        /* Input row */
+        .cb-input-row {
+            display: flex;
+            gap: 10px;
+            padding: 16px 24px 20px;
+            border-top: 1px solid #e8edf2;
+            background: #fff;
+        }
+        .cb-input {
+            flex: 1;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #f8fafc;
+        }
+        .cb-input:focus { border-color: #001F3F; background: #fff; }
+        .cb-input::placeholder { color: #94a3b8; }
+        .cb-send-btn {
+            background: linear-gradient(135deg, #001F3F, #0d3b6e);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 22px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .cb-send-btn:hover { opacity: 0.88; }
+        .cb-send-btn:active { transform: scale(0.96); }
+        .cb-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* History panel */
+        .cb-history-panel {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,31,63,0.07);
+            padding: 20px 24px;
+        }
+        .cb-history-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #001F3F;
+            margin: 0 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .cb-history-empty {
+            color: #94a3b8;
+            font-size: 13px;
+            text-align: center;
+            padding: 12px 0;
+        }
+        .cb-history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .cb-history-item {
+            padding: 9px 14px;
+            background: #f8fafc;
+            border-radius: 10px;
+            font-size: 13px;
+            color: #475569;
+            cursor: pointer;
+            transition: background 0.15s;
+            border: 1px solid #e2e8f0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .cb-history-item:hover { background: #e8edf5; color: #001F3F; }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .cb-hero { padding: 36px 20px 40px; }
+            .cb-messages { min-height: 320px; max-height: 380px; padding: 16px; }
+            .cb-input-row { padding: 12px 16px 16px; }
+            .cb-chips { padding: 0 16px 12px; }
+            .cb-msg { max-width: 90%; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Header ── -->
+    <header class="header">
+        <div class="main-header">
+            <h2 class="topheader">
+                <a class="logo" href="index.html">Domus</a>
+            </h2>
+        </div>
+        <nav class="centertabs">
+            <ul class="other_tabs1">
+                <li class="tab" onclick="window.location='index.html?page=banks'">Banks</li>
+                <li class="tab" onclick="window.location='index.html?page=groceries'">Groceries</li>
+                <li class="tab" onclick="window.location='index.html?page=school'">School</li>
+                <li class="tab" onclick="window.location='spending-analyzer.html'">Spending Analyzer</li>
+                <li class="tab" onclick="window.location='index.html?page=utilities'">Utilities</li>
+                <li class="tab" onclick="window.location='index.html?page=work'">Work</li>
+                <li class="tab active" onclick="window.location='chatbot.html'">Chatbot</li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="cb-main">
+
+        <!-- Hero -->
+        <section class="cb-hero">
+            <div class="cb-badge">AI Financial Advisor</div>
+            <h1 class="cb-hero-title">Ask Domus</h1>
+            <p class="cb-hero-subtitle">Your personal AI — ask anything about your finances</p>
+        </section>
+
+        <div class="cb-container">
+
+            <!-- Main Chat Panel -->
+            <div class="cb-panel">
+
+                <!-- Header -->
+                <div class="cb-panel-header">
+                    <div class="cb-avatar">🤖</div>
+                    <div>
+                        <div class="cb-panel-name">Domus</div>
+                        <div class="cb-panel-status" id="cb-status">● Ready</div>
+                    </div>
+                    <div class="cb-header-actions">
+                        <button class="cb-action-btn" onclick="clearChat()">🗑 Clear</button>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="cb-messages" id="cb-messages"></div>
+
+                <!-- Typing -->
+                <div class="cb-typing" id="cb-typing">
+                    <div class="cb-typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="cb-typing-label">Domus is thinking…</div>
+                </div>
+
+                <!-- Quick Chips -->
+                <div class="cb-chips" id="cb-chips">
+                    <button class="cb-chip" onclick="quickSend('How am I doing with my budget this month?')">📊 Budget status</button>
+                    <button class="cb-chip" onclick="quickSend('Where am I spending the most money?')">💸 Top spending</button>
+                    <button class="cb-chip" onclick="quickSend('Give me 3 tips to save more money.')">💡 Saving tips</button>
+                    <button class="cb-chip" onclick="quickSend('Are there any subscriptions I should cancel?')">🔁 Subscriptions</button>
+                    <button class="cb-chip" onclick="quickSend('What is my biggest spending category?')">📈 Top category</button>
+                </div>
+
+                <!-- Input -->
+                <div class="cb-input-row">
+                    <input
+                        id="cb-input"
+                        class="cb-input"
+                        type="text"
+                        placeholder="Ask about your finances…"
+                        maxlength="500"
+                        onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendMessage(); }"
+                    >
+                    <button class="cb-send-btn" id="cb-send-btn" onclick="sendMessage()">Send ↑</button>
+                </div>
+
+            </div>
+
+            <!-- Recent Conversation History -->
+            <div class="cb-history-panel">
+                <div class="cb-history-title">🕓 Recent Questions</div>
+                <div id="cb-history-list" class="cb-history-list">
+                    <p class="cb-history-empty">No recent questions yet.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2024 <strong>Domus</strong> &mdash; AI Chatbot &middot; Fiserv Future Techies Challenge</p>
+    </footer>
+
+    <script>
+        const CB_API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+            ? "http://localhost:5000"
+            : "";
+
+        const CB_HISTORY_KEY = "cb_question_history";
+        const CB_MAX_HISTORY = 10;
+
+        // ── State ──────────────────────────────────────────────────────────────
+        let questionHistory = JSON.parse(localStorage.getItem(CB_HISTORY_KEY) || "[]");
+
+        // ── Init ───────────────────────────────────────────────────────────────
+        document.addEventListener("DOMContentLoaded", () => {
+            renderHistory();
+            addWelcomeMessage();
+        });
+
+        function addWelcomeMessage() {
+            appendAI("Hi! I'm **Domus**, your personal financial advisor 👋\n\nI can help you understand your spending patterns, find saving opportunities, and give you personalized financial insights.\n\nWhat would you like to know about your finances today?");
+        }
+
+        // ── Send Message ───────────────────────────────────────────────────────
+        async function sendMessage() {
+            const input   = document.getElementById("cb-input");
+            const sendBtn = document.getElementById("cb-send-btn");
+            const message = input.value.trim();
+            if (!message) return;
+
+            input.value    = "";
+            input.disabled = true;
+            sendBtn.disabled = true;
+
+            appendUser(message);
+            showTyping(true);
+            setStatus("Thinking…", "#f59e0b");
+
+            // Save to history
+            saveToHistory(message);
+
+            try {
+                const res  = await fetch(CB_API_BASE + "/chat", {
+                    method:  "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body:    JSON.stringify({ message }),
+                });
+                const json = await res.json();
+                showTyping(false);
+                if (json.success) {
+                    appendAI(json.data.reply || "No response received.");
+                    setStatus("● Ready", "#22c55e");
+                } else {
+                    appendAI("Sorry, I ran into an error: " + (json.error || "Unknown error"), true);
+                    setStatus("● Error", "#ef4444");
+                }
+            } catch (err) {
+                showTyping(false);
+                appendAI("Could not connect to Domus. Make sure the backend is running.", true);
+                setStatus("● Offline", "#ef4444");
+            } finally {
+                input.disabled   = false;
+                sendBtn.disabled = false;
+                input.focus();
+            }
+        }
+
+        function quickSend(text) {
+            document.getElementById("cb-input").value = text;
+            sendMessage();
+        }
+
+        // ── Render Helpers ─────────────────────────────────────────────────────
+        function appendUser(text) {
+            const el = document.createElement("div");
+            el.className = "cb-msg cb-msg-user";
+            el.textContent = text;
+            getMessages().appendChild(el);
+            scrollToBottom();
+        }
+
+        function appendAI(text, isError = false) {
+            const el = document.createElement("div");
+            el.className = "cb-msg cb-msg-ai" + (isError ? " error" : "");
+            // Bold **text** support
+            el.innerHTML = esc(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
+            getMessages().appendChild(el);
+            scrollToBottom();
+        }
+
+        function esc(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function showTyping(visible) {
+            const el = document.getElementById("cb-typing");
+            el.classList.toggle("visible", visible);
+            scrollToBottom();
+        }
+
+        function setStatus(text, color) {
+            const el = document.getElementById("cb-status");
+            if (el) { el.textContent = text; el.style.color = color || "#22c55e"; }
+        }
+
+        function getMessages() { return document.getElementById("cb-messages"); }
+
+        function scrollToBottom() {
+            const msgs = getMessages();
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        // ── Clear ──────────────────────────────────────────────────────────────
+        function clearChat() {
+            getMessages().innerHTML = "";
+            addWelcomeMessage();
+            setStatus("● Ready", "#22c55e");
+        }
+
+        // ── History ────────────────────────────────────────────────────────────
+        function saveToHistory(q) {
+            questionHistory = [q, ...questionHistory.filter(x => x !== q)].slice(0, CB_MAX_HISTORY);
+            localStorage.setItem(CB_HISTORY_KEY, JSON.stringify(questionHistory));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById("cb-history-list");
+            if (!questionHistory.length) {
+                list.innerHTML = '<p class="cb-history-empty">No recent questions yet.</p>';
+                return;
+            }
+            list.innerHTML = questionHistory.map(q =>
+                `<div class="cb-history-item" onclick="quickSend(${JSON.stringify(q)})">${esc(q)}</div>`
+            ).join("");
+        }
+    </script>
+
+</body>
+</html>

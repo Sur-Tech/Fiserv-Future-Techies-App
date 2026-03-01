@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "transactions.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    { "src": "/create_link_token",  "dest": "/transactions.py" },
+    { "src": "/exchange_token",     "dest": "/transactions.py" },
+    { "src": "/sandbox/init",       "dest": "/transactions.py" },
+    { "src": "/accounts",           "dest": "/transactions.py" },
+    { "src": "/transactions",       "dest": "/transactions.py" },
+    { "src": "/report",             "dest": "/transactions.py" },
+    { "src": "/alert",              "dest": "/transactions.py" },
+    { "src": "/recurring",          "dest": "/transactions.py" },
+    { "src": "/anomalies",          "dest": "/transactions.py" },
+    { "src": "/budgets/auto",       "dest": "/transactions.py" },
+    { "src": "/budgets/set",        "dest": "/transactions.py" },
+    { "src": "/budgets",            "dest": "/transactions.py" },
+    { "src": "/chat",               "dest": "/transactions.py" },
+    { "src": "/history",            "dest": "/transactions.py" },
+    { "src": "/simulate",           "dest": "/transactions.py" },
+    { "src": "/reset",              "dest": "/transactions.py" },
+    { "src": "/health",             "dest": "/transactions.py" },
+    { "src": "/(.*)",               "dest": "/$1" }
+  ]
+}
