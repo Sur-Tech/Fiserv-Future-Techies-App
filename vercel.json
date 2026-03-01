@@ -1,12 +1,13 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "transactions.py",
-      "use": "@vercel/python"
-    }
+    { "src": "transactions.py", "use": "@vercel/python" },
+    { "src": "*.html",          "use": "@vercel/static" },
+    { "src": "*.css",           "use": "@vercel/static" },
+    { "src": "*.js",            "use": "@vercel/static" }
   ],
   "routes": [
+    { "src": "/",               "dest": "/index.html" },
     { "src": "/create_link_token",  "dest": "/transactions.py" },
     { "src": "/exchange_token",     "dest": "/transactions.py" },
     { "src": "/sandbox/init",       "dest": "/transactions.py" },
