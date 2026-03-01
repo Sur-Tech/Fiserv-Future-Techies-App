@@ -48,7 +48,10 @@ else:
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
 
-ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")]
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://localhost:3000,http://localhost:8080,https://fiserv-future-techies-app-glhq.vercel.app"
+).split(",")]
 CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
 
 PLAID_CLIENT_ID = os.getenv("PLAID_CLIENT_ID", "").strip()
