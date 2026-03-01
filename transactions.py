@@ -10,8 +10,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from functools import wraps
 
-from google import genai
-from google.genai import types as genai_types
+from groq import Groq
 from dotenv import load_dotenv
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
@@ -34,16 +33,16 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("cashlens")
 
-GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
-GEMINI_TIMEOUT    = int(os.getenv("GEMINI_TIMEOUT", "30"))
+GROQ_API_KEY  = os.getenv("GROQ_API_KEY", "").strip()
+GROQ_MODEL    = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_TIMEOUT  = int(os.getenv("GROQ_TIMEOUT", "30"))
 
-gemini_client = None
-if GEMINI_API_KEY:
-    gemini_client = genai.Client(api_key=GEMINI_API_KEY)
-    logger.info("Gemini AI ready (model=%s).", GEMINI_MODEL_NAME)
+groq_client = None
+if GROQ_API_KEY:
+    groq_client = Groq(api_key=GROQ_API_KEY)
+    logger.info("Groq AI ready (model=%s).", GROQ_MODEL)
 else:
-    logger.warning("GEMINI_API_KEY not set -- AI features disabled.")
+    logger.warning("GROQ_API_KEY not set -- AI features disabled.")
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 64 * 1024
@@ -534,18 +533,19 @@ def detect_anomalies(transactions, threshold=2.0):
     return anomalies
 
 
-def gemini_generate(prompt):
-    if not gemini_client:
-        return "AI unavailable -- set GEMINI_API_KEY in your .env file."
+def groq_generate(prompt):
+    if not groq_client:
+        return "AI unavailable -- set GROQ_API_KEY in your .env file."
     try:
-        resp = gemini_client.models.generate_content(
-            model=GEMINI_MODEL_NAME,
-            contents=prompt,
-            config=genai_types.GenerateContentConfig(max_output_tokens=800, temperature=0.7),
+        resp = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=800,
+            temperature=0.7,
         )
-        return (getattr(resp, "text", "") or "").strip()
+        return (resp.choices[0].message.content or "").strip()
     except Exception as e:
-        logger.error("Gemini error: %s", e)
+        logger.error("Groq error: %s", e)
         return "AI temporarily unavailable. Please try again."
 
 
@@ -563,7 +563,7 @@ def _fmt_budgets(budgets):
                      for cat, info in budgets.items())
 
 
-def gemini_spending_report(stats, budgets, period_days):
+def groq_spending_report(stats, budgets, period_days):
     prompt = f"""You are Domus, a personal financial advisor writing a report directly to the user.
 Be warm, direct, and specific. Use actual dollar amounts from their data.
 Do NOT give generic advice -- reference THEIR specific spending habits.
@@ -586,10 +586,10 @@ Write a report that:
 3. Calls out any categories where they blew their budget
 4. Gives 3 specific, actionable things they should do THIS WEEK
 5. Ends with a short encouraging note"""
-    return gemini_generate(prompt)
+    return groq_generate(prompt)
 
 
-def gemini_budget_recommendations(stats):
+def groq_budget_recommendations(stats):
     prompt = f"""You are a personal AI financial advisor.
 Based on this user's real spending, recommend sensible monthly budgets for each category.
 Their spending:\n{_fmt_categories(stats)}
@@ -603,16 +603,16 @@ Rules:
 - All values must be positive numbers
 Respond ONLY with valid JSON -- no explanation, no markdown, no code fences.
 Example: {{"Food and Drink": 400, "Transportation": 150}}"""
-    raw   = gemini_generate(prompt)
+    raw   = groq_generate(prompt)
     clean = re.sub(r"```[a-z]*", "", raw).replace("```", "").strip()
     match = re.search(r"\{[^{}]+\}", clean, re.DOTALL)
     if not match:
-        logger.warning("Gemini budget response had no JSON: %r", raw[:200])
+        logger.warning("Groq budget response had no JSON: %r", raw[:200])
         return {}
     try:
         parsed = json.loads(match.group())
     except json.JSONDecodeError as e:
-        logger.warning("Gemini budget parse error: %s | raw=%r", e, raw[:200])
+        logger.warning("Groq budget parse error: %s | raw=%r", e, raw[:200])
         return {}
     result = {}
     for cat, val in parsed.items():
@@ -620,16 +620,16 @@ Example: {{"Food and Drink": 400, "Transportation": 150}}"""
         try:
             f_val = float(val)
         except (TypeError, ValueError):
-            logger.warning("Non-numeric Gemini budget '%s': %r", cat, val)
+            logger.warning("Non-numeric Groq budget '%s': %r", cat, val)
             continue
         if f_val < 0 or f_val > 100_000:
-            logger.warning("Out-of-range Gemini budget '%s': %s", cat, f_val)
+            logger.warning("Out-of-range Groq budget '%s': %s", cat, f_val)
             continue
         result[cat_clean] = round(f_val, 2)
     return result
 
 
-def gemini_alert(stats, budgets):
+def groq_alert(stats, budgets):
     over_budget = [
         {"category": cat, "spent": round(spent, 2),
          "limit": round(budgets[cat]["limit"], 2),
@@ -652,69 +652,224 @@ Write a short alert that:
 1. Directly names which categories they overspent in and by how much
 2. If overall cash flow is negative, flag that clearly
 3. Gives one concrete action they can take TODAY to fix it"""
-    return gemini_generate(prompt)
+    return groq_generate(prompt)
 
 
-def _rule_based_chat(message, stats, budgets):
-    """Smart data-driven fallback when Gemini is unavailable."""
-    msg = message.lower()
+def _rule_based_chat(message, stats, budgets):  # noqa: C901
+    """Smart conversational AI using real transaction data."""
+    msg       = message.lower()
     spent     = stats.get("total_spent", 0)
+    income    = stats.get("total_income", 0)
     avg       = stats.get("avg_daily_spend", 0)
+    avg_tx    = stats.get("avg_transaction", 0)
     top_cat   = stats.get("top_category", "Other")
     top_amt   = stats.get("top_category_amount", 0)
     net       = stats.get("net_cash_flow", 0)
     tx_count  = stats.get("transaction_count", 0)
     cats      = stats.get("category_breakdown", {})
+    merchants = stats.get("top_merchants", [])
+    big_day   = stats.get("biggest_expense_day", None)
 
-    if any(w in msg for w in ["total", "spent", "spending", "month", "budget", "overview", "summary", "doing"]):
-        flow = "positive" if net >= 0 else "negative"
+    # ── Greetings ─────────────────────────────────────────────────────────
+    if any(w in msg for w in ["hello", "hi ", "hey", "howdy", "good morning", "good afternoon"]):
         return (
-            f"Here's your spending summary for the last 30 days:\n\n"
-            f"💰 Total spent: ${spent:,.2f}\n"
-            f"📊 Daily average: ${avg:.2f}/day\n"
-            f"📈 Top category: {top_cat} (${top_amt:,.2f})\n"
-            f"🔢 Transactions: {tx_count}\n"
-            f"{'✅' if net >= 0 else '⚠️'} Net cash flow: ${net:,.2f} ({flow})\n\n"
-            + ("You're in good shape this period!" if net >= 0 else "You're spending more than income recorded — watch your expenses.")
+            f"Hey there! I'm Domus, your personal financial advisor. 👋\n\n"
+            f"Here's a quick snapshot of your last 30 days:\n"
+            f"• Spent: **${spent:,.2f}** across {tx_count} transactions\n"
+            f"• Daily average: **${avg:.2f}/day**\n"
+            f"• Cash flow: **{'✅ positive' if net >= 0 else '⚠️ negative'}** (${net:,.2f})\n\n"
+            f"Ask me anything — try 'where am I spending the most?' or 'give me savings tips'!"
         )
 
-    if any(w in msg for w in ["categor", "breakdown", "where", "most", "top"]):
+    # ── Jokes / off-topic ─────────────────────────────────────────────────
+    if any(w in msg for w in ["joke", "funny", "laugh", "humor"]):
+        return (
+            f"Ha! Here's a finance joke: Why did the dollar bill break up with the coin? "
+            f"Because it had too many \"cents\" of humor! 😄\n\n"
+            f"On a serious note, your spending this month was **${spent:,.2f}** — "
+            f"not a joke, but hopefully not scary either! Want a real financial tip instead?"
+        )
+
+    # ── Summary / overview / how am I doing ───────────────────────────────
+    if any(w in msg for w in ["summary", "overview", "how am i", "doing", "overall", "report"]):
+        top3 = sorted(cats.items(), key=lambda x: x[1], reverse=True)[:3]
+        top3_str = ", ".join(f"{c} (${a:,.2f})" for c, a in top3)
+        health = "great" if net > 500 else ("okay" if net >= 0 else "tight")
+        return (
+            f"Here's your 30-day financial overview:\n\n"
+            f"💰 **Total Spent:** ${spent:,.2f}\n"
+            f"📥 **Income Recorded:** ${income:,.2f}\n"
+            f"{'✅' if net >= 0 else '⚠️'} **Net Cash Flow:** ${net:,.2f}\n"
+            f"📊 **Daily Average:** ${avg:.2f}/day\n"
+            f"🔢 **Transactions:** {tx_count} (avg ${avg_tx:.2f} each)\n\n"
+            f"**Top Categories:** {top3_str}\n\n"
+            f"Overall your finances look **{health}** this period. "
+            + ("Keep it up! 🎉" if net >= 0 else "Consider reviewing your top spending categories to cut back.")
+        )
+
+    # ── Total spent ───────────────────────────────────────────────────────
+    if any(w in msg for w in ["total", "spent", "how much", "spend this", "cost me"]):
+        return (
+            f"Over the last 30 days you've spent **${spent:,.2f}** across **{tx_count} transactions**, "
+            f"averaging **${avg:.2f}/day** or **${avg_tx:.2f}** per purchase.\n\n"
+            f"Your biggest spending area is **{top_cat}** at ${top_amt:,.2f}."
+            + (f"\n\nYour biggest single-day spending was on **{big_day}**." if big_day else "")
+        )
+
+    # ── Category breakdown ────────────────────────────────────────────────
+    if any(w in msg for w in ["categor", "breakdown", "where", "most", "top spend", "areas"]):
         top5 = sorted(cats.items(), key=lambda x: x[1], reverse=True)[:5]
-        lines = "\n".join(f"  {i+1}. {c}: ${a:,.2f}" for i, (c, a) in enumerate(top5))
-        return f"Your top spending categories:\n\n{lines}\n\nYour biggest area is **{top_cat}** at ${top_amt:,.2f}."
-
-    if any(w in msg for w in ["save", "saving", "tip", "advice", "recommend", "cut", "reduce"]):
-        over = [f"{cat} (over by ${cats.get(cat,0) - info['limit']:.2f})"
-                for cat, info in budgets.items() if cats.get(cat, 0) > info["limit"]]
-        budget_note = f"\n4. You're over budget in: {', '.join(over)}." if over else ""
+        lines = "\n".join(f"  {i+1}. **{c}** — ${a:,.2f} ({a/spent*100:.0f}% of total)" for i, (c, a) in enumerate(top5) if spent > 0)
         return (
-            f"Here are 3 tips based on your data:\n\n"
-            f"1. Your top spend is {top_cat} (${top_amt:,.2f}) — look for ways to reduce here first.\n"
-            f"2. You average ${avg:.2f}/day. Even cutting 10% saves ${avg * 0.1 * 30:.0f}/month.\n"
-            f"3. Check the Spending Analyzer for recurring subscriptions you may have forgotten about."
-            + budget_note
+            f"Here's where your money went this month:\n\n{lines}\n\n"
+            f"**{top_cat}** is your biggest category, taking up "
+            f"**{top_amt/spent*100:.0f}%** of your total spending."
+            if spent > 0 else
+            f"Your top spending categories:\n\n" + "\n".join(f"  {i+1}. {c}: ${a:,.2f}" for i, (c, a) in enumerate(top5))
         )
 
-    if any(w in msg for w in ["subscript", "recurring", "monthly", "auto", "repeat"]):
-        return "Check the **Recurring Transactions** section in the Spending Analyzer — it detects merchants that appear across multiple months, which are likely subscriptions."
+    # ── Specific category lookup ──────────────────────────────────────────
+    for cat_name, cat_amt in cats.items():
+        if cat_name.lower() in msg or cat_name.lower().split()[0] in msg:
+            pct = cat_amt / spent * 100 if spent > 0 else 0
+            return (
+                f"You spent **${cat_amt:,.2f}** on **{cat_name}** this month, "
+                f"which is **{pct:.0f}%** of your total spending (${spent:,.2f}).\n\n"
+                f"That works out to about **${cat_amt/30:.2f}/day** for this category."
+            )
 
-    if any(w in msg for w in ["daily", "average", "day"]):
-        return f"Your average daily spending over the last 30 days is **${avg:.2f}/day** (${avg * 7:.2f}/week, ${avg * 30:.2f}/month)."
+    # ── Merchants / stores ────────────────────────────────────────────────
+    if any(w in msg for w in ["merchant", "store", "shop", "vendor", "where do i", "places"]):
+        if merchants:
+            lines = "\n".join(f"  {i+1}. **{m['name']}** — {m['visits']} visits, ${m['total']:,.2f} total" for i, m in enumerate(merchants[:5]))
+            return f"Your most visited merchants this month:\n\n{lines}\n\nYou spend the most frequently at **{merchants[0]['name']}**."
+        return "Merchant data isn't available yet — try syncing your transactions first."
 
-    if any(w in msg for w in ["transaction", "how many", "count"]):
-        return f"You have **{tx_count} transactions** in the last 30 days, averaging ${spent / max(tx_count, 1):.2f} per transaction."
+    # ── Income ────────────────────────────────────────────────────────────
+    if any(w in msg for w in ["income", "earn", "salary", "paycheck", "deposit"]):
+        return (
+            f"Income recorded in the last 30 days: **${income:,.2f}**.\n\n"
+            f"After your spending of ${spent:,.2f}, your **net cash flow is ${net:,.2f}**.\n\n"
+            + ("You're saving money — great work! 🎉" if net > 0 else
+               "Your spending currently exceeds your recorded income. Consider tracking all income sources.")
+        )
 
-    # Generic fallback with real numbers
+    # ── Budget ────────────────────────────────────────────────────────────
+    if any(w in msg for w in ["budget", "limit", "over budget", "under budget"]):
+        if budgets:
+            lines = []
+            for cat, info in budgets.items():
+                actual = cats.get(cat, 0)
+                limit  = info.get("limit", 0)
+                status = "⚠️ over" if actual > limit else "✅ under"
+                lines.append(f"  • **{cat}**: ${actual:,.2f} / ${limit:,.2f} limit ({status})")
+            over_cats = [c for c, i in budgets.items() if cats.get(c, 0) > i["limit"]]
+            return (
+                f"Budget status this month:\n\n" + "\n".join(lines) +
+                (f"\n\n⚠️ You're over budget in: {', '.join(over_cats)}." if over_cats else "\n\n✅ You're within all your budgets!")
+            )
+        return "No budgets set yet. You can set budgets in the Spending Analyzer under 'Budget Tracker'."
+
+    # ── Savings tips / advice ─────────────────────────────────────────────
+    if any(w in msg for w in ["save", "saving", "tip", "advice", "recommend", "cut", "reduce", "improve", "help me"]):
+        over = [f"**{cat}** (${cats.get(cat,0) - info['limit']:,.2f} over)" for cat, info in budgets.items() if cats.get(cat, 0) > info["limit"]]
+        tips = [
+            f"1. **Attack your top category first** — {top_cat} at ${top_amt:,.2f} is 30%+ of budget. Look for one recurring charge to cancel.",
+            f"2. **Daily spend target** — You average ${avg:.2f}/day. Setting a daily budget of ${avg*0.85:.2f} would save you **${avg*0.15*30:.0f}/month**.",
+            f"3. **Automate savings** — Transfer a fixed amount on payday before you can spend it. Even $50/paycheck adds up.",
+            f"4. **Review subscriptions** — Check the Recurring Transactions tab in the Spending Analyzer for forgotten subscriptions.",
+        ]
+        if over:
+            tips.append(f"5. **Budget alert** — You're over limit on: {', '.join(over)}. Focus on these areas first.")
+        return "Here are personalized savings tips based on your data:\n\n" + "\n".join(tips)
+
+    # ── Recurring / subscriptions ─────────────────────────────────────────
+    if any(w in msg for w in ["subscript", "recurring", "auto", "repeat", "netflix", "spotify", "monthly bill"]):
+        return (
+            "Great question! The **Recurring Transactions** section in the Spending Analyzer "
+            "automatically detects merchants that charge you consistently each month.\n\n"
+            "Common subscriptions to review: streaming services, gym memberships, software tools, "
+            "and insurance premiums. Even canceling one $15/month subscription saves **$180/year**."
+        )
+
+    # ── Daily average ─────────────────────────────────────────────────────
+    if any(w in msg for w in ["daily", "average", "per day", "day"]):
+        return (
+            f"Your average daily spending is **${avg:.2f}/day** over the last 30 days.\n\n"
+            f"📅 Weekly: ~${avg*7:,.2f}\n"
+            f"📆 Monthly: ~${avg*30:,.2f}\n"
+            f"📅 Yearly projection: ~${avg*365:,.2f}\n\n"
+            f"Your biggest single-day was **{big_day}**." if big_day else
+            f"Your average daily spending is **${avg:.2f}/day**."
+        )
+
+    # ── Transaction count ─────────────────────────────────────────────────
+    if any(w in msg for w in ["transaction", "how many", "count", "number of"]):
+        return (
+            f"You have **{tx_count} transactions** in the last 30 days — that's about "
+            f"**{tx_count//30 or 1}–{max(tx_count//20, 2)} per day**.\n\n"
+            f"Average spend per transaction: **${avg_tx:.2f}**.\n"
+            f"Total spent: **${spent:,.2f}**."
+        )
+
+    # ── Net cash flow / balance ───────────────────────────────────────────
+    if any(w in msg for w in ["cash flow", "net", "balance", "profit", "surplus", "deficit"]):
+        return (
+            f"Your 30-day net cash flow is **${net:,.2f}**.\n\n"
+            f"• Income recorded: ${income:,.2f}\n"
+            f"• Total spent: ${spent:,.2f}\n"
+            f"• **Net: ${net:,.2f}** ({'surplus ✅' if net >= 0 else 'deficit ⚠️'})\n\n"
+            + ("You're spending less than you earn — excellent financial health!" if net > 0
+               else "Your spending exceeds your recorded income. Check if all income sources are linked.")
+        )
+
+    # ── Anomalies / unusual / big ─────────────────────────────────────────
+    if any(w in msg for w in ["unusual", "anomal", "big purchase", "large", "weird", "strange", "spike"]):
+        return (
+            f"For unusual spending patterns, check the **Spending Alerts** section in the Spending Analyzer — "
+            f"it flags transactions that are significantly above your average for each category.\n\n"
+            f"Your average transaction is **${avg_tx:.2f}**. Anything above "
+            f"**${avg_tx*2:.0f}** is worth reviewing."
+        )
+
+    # ── Comparison / trend ────────────────────────────────────────────────
+    if any(w in msg for w in ["trend", "compar", "last month", "previous", "improve", "better", "worse"]):
+        return (
+            f"This month you spent **${spent:,.2f}** across {tx_count} transactions.\n\n"
+            f"To compare with previous months, check the **Monthly Chart** in the Spending Analyzer — "
+            f"it shows your spending trend over time so you can see if you're improving.\n\n"
+            f"💡 Tip: A good target is to reduce monthly spending by 5–10% each month."
+        )
+
+    # ── Biggest expense day ───────────────────────────────────────────────
+    if any(w in msg for w in ["biggest", "most expensive", "highest", "worst day", "max"]):
+        if big_day:
+            return (
+                f"Your biggest spending day in the last 30 days was **{big_day}**.\n\n"
+                f"Check the Spending Analyzer for a day-by-day breakdown. "
+                f"Your overall biggest category is **{top_cat}** at ${top_amt:,.2f}."
+            )
+
+    # ── Generic thoughtful fallback ───────────────────────────────────────
+    pct_top = top_amt / spent * 100 if spent > 0 else 0
     return (
-        f"Based on your last 30 days: you spent **${spent:,.2f}** across {tx_count} transactions, "
-        f"averaging **${avg:.2f}/day**. Your biggest category is **{top_cat}** at ${top_amt:,.2f}. "
-        f"Net cash flow: ${net:,.2f}. Ask me something specific like 'where am I spending the most?' or 'give me saving tips'."
+        f"Based on your last 30 days of transactions:\n\n"
+        f"💰 You've spent **${spent:,.2f}** across {tx_count} transactions\n"
+        f"📊 Daily average: **${avg:.2f}/day**\n"
+        f"📈 Biggest category: **{top_cat}** (${top_amt:,.2f}, {pct_top:.0f}% of total)\n"
+        f"{'✅' if net >= 0 else '⚠️'} Net cash flow: **${net:,.2f}**\n\n"
+        f"Some things I can help with:\n"
+        f"• \"Where am I spending the most?\"\n"
+        f"• \"Give me savings tips\"\n"
+        f"• \"What's my daily average?\"\n"
+        f"• \"Am I over budget?\"\n"
+        f"• \"Show me my top merchants\""
     )
 
 
-def gemini_chat(user_message, stats, budgets):
+def groq_chat(user_message, stats, budgets):
     safe_msg = guard_prompt_injection(sanitize_text(user_message, _MAX_CHAT_MESSAGE_LEN))
-    if not gemini_client:
+    if not groq_client:
         return _rule_based_chat(safe_msg, stats, budgets)
     prompt = f"""You are Domus, a friendly personal financial advisor.
 Answer the user's question using their actual spending data below.
@@ -728,7 +883,7 @@ USER'S DATA:
 SPENDING BY CATEGORY:\n{_fmt_categories(stats)}
 THEIR BUDGETS:\n{_fmt_budgets(budgets)}
 USER'S QUESTION: {safe_msg}"""
-    result = gemini_generate(prompt)
+    result = groq_generate(prompt)
     if "unavailable" in result.lower():
         return _rule_based_chat(safe_msg, stats, budgets)
     return result
@@ -791,7 +946,7 @@ def _resolve_transactions(user_id, access_token, days):
 
 @app.route("/")
 def home():
-    return _ok(app="Domus -- Flask + Plaid + Gemini", version="4.0",
+    return _ok(app="Domus -- Flask + Plaid + Groq AI", version="4.0",
                simulation_mode=SIMULATION_MODE,
                endpoints=[
                    "POST /create_link_token","POST /exchange_token","POST /sandbox/init","GET /accounts",
@@ -809,7 +964,7 @@ def health():
     except Exception:
         db_ok = False
     return jsonify({"status": "ok" if db_ok else "degraded", "db": "ok" if db_ok else "error",
-                    "simulation_mode": SIMULATION_MODE, "gemini": "ok" if gemini_client else "disabled",
+                    "simulation_mode": SIMULATION_MODE, "groq": "ok" if groq_client else "disabled",
                     "timestamp": datetime.now(timezone.utc).isoformat()}), (200 if db_ok else 503)
 
 
@@ -943,7 +1098,7 @@ def get_report():
     if not stats:
         return _error(400, "No transaction data available for the requested period")
     budgets     = load_budgets(user_id)
-    report_text = gemini_spending_report(stats, budgets, days)
+    report_text = groq_spending_report(stats, budgets, days)
     save_report(user_id, "full_report", report_text, stats)
     return _ok(report=report_text, stats=stats, period_days=days,
                generated_at=datetime.now(timezone.utc).isoformat())
@@ -962,7 +1117,7 @@ def get_alert():
     if not stats:
         return _error(400, "No transaction data available for the requested period")
     budgets    = load_budgets(user_id)
-    alert_text = gemini_alert(stats, budgets)
+    alert_text = groq_alert(stats, budgets)
     save_report(user_id, "alert", alert_text, stats)
     return _ok(alert=alert_text, budgets=budgets,
                stats_summary={"total_spent": stats["total_spent"], "net_cash_flow": stats["net_cash_flow"]})
@@ -982,7 +1137,7 @@ def auto_set_budgets():
     stats = calculate_stats(all_tx)
     if not stats:
         return _error(400, "No transaction data available")
-    recommended = gemini_budget_recommendations(stats)
+    recommended = groq_budget_recommendations(stats)
     if not recommended:
         return _error(500, "AI could not generate budgets -- please try again")
     existing       = load_budgets(user_id)
@@ -1045,7 +1200,7 @@ def chat():
     if not stats:
         return _error(400, "No transaction data available")
     budgets = load_budgets(user_id)
-    reply   = gemini_chat(message, stats, budgets)
+    reply   = groq_chat(message, stats, budgets)
     return _ok(reply=reply, message=message)
 
 
@@ -1129,11 +1284,11 @@ def server_error(_e):   return _error(500, "Internal server error")
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("  Domus -- Flask + Plaid + Gemini  v4.0")
+    print("  Domus -- Flask + Plaid + Groq AI  v4.0")
     print("=" * 60)
     print(f"  Plaid environment : {PLAID_ENV}")
     print(f"  Simulation mode   : {SIMULATION_MODE}")
-    print(f"  Gemini AI         : {'Ready' if gemini_client else 'Disabled (set GEMINI_API_KEY)'}")
+    print(f"  Groq AI           : {'Ready' if groq_client else 'Disabled (set GROQ_API_KEY)'}")
     print(f"  Auth              : {'API_KEY set' if API_KEY else 'DISABLED (set API_KEY in .env)'}")
     print(f"  Token storage     : {DB_PATH}")
     print("=" * 60)

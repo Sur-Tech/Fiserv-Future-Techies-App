@@ -1,0 +1,27 @@
+# Environment variables (contains secrets)
+.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+nul
+
+# Temp / editor files
+tmpclaude*
+*.tmp
