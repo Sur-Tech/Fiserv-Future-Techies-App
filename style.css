@@ -864,26 +864,23 @@ footer strong {
 .action-btn {
     display: flex;
     align-items: center;
-    gap: 7px;
-    padding: 11px 18px;
-    border: 1.5px solid var(--gray-200);
-    border-radius: var(--radius-md);
-    background: white;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #fff;
     cursor: pointer;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--gray-700);
-    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
     font-family: 'Inter', sans-serif;
-    box-shadow: var(--shadow-sm);
 }
 
 .action-btn:hover {
-    border-color: var(--orange);
-    color: var(--orange);
-    background: rgba(245, 128, 37, 0.04);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(245, 128, 37, 0.15);
+    background: #f9fafb;
+    border-color: var(--navy-deep);
+    color: var(--navy-deep);
 }
 
 /* --- Shopping List (Groceries) --- */
@@ -1161,64 +1158,60 @@ footer strong {
    AI CHAT WIDGET
    ============================================= */
 
-/* --- Floating Action Button --- */
-.chat-fab {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-light) 100%);
-    color: white;
+/* --- Header Chat Button --- */
+.header-chat-btn {
+    background: var(--orange);
+    color: #fff;
     border: none;
-    border-radius: 28px;
-    padding: 13px 22px;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 700;
-    font-family: 'Inter', sans-serif;
-    box-shadow: 0 8px 28px rgba(245, 128, 37, 0.48);
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 1000;
-    letter-spacing: 0.2px;
+    gap: 6px;
+    white-space: nowrap;
+    transition: background 0.15s;
+    margin-left: 12px;
+    flex-shrink: 0;
 }
+.header-chat-btn:hover { background: #d06500; }
+.header-chat-btn.active { background: #b85800; }
 
-.chat-fab:hover {
-    transform: translateY(-4px) scale(1.04);
-    box-shadow: 0 14px 40px rgba(245, 128, 37, 0.55);
-}
+/* --- Old Floating Button: hidden --- */
+.chat-fab { display: none; }
 
-.chat-fab-icon { font-size: 17px; }
-.chat-fab-label { white-space: nowrap; }
-
-/* --- Chat Panel --- */
-.chat-panel {
+/* --- Backdrop Overlay --- */
+.chat-overlay {
     position: fixed;
-    bottom: 88px;
-    right: 28px;
-    width: 390px;
-    height: 530px;
-    background: white;
-    border-radius: 22px;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 31, 63, 0.12);
-    display: flex;
-    flex-direction: column;
-    z-index: 999;
-    overflow: hidden;
-    transform: scale(0.88) translateY(24px);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1490;
     opacity: 0;
     pointer-events: none;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-                opacity 0.25s ease;
-    transform-origin: bottom right;
+    transition: opacity 0.25s ease;
+}
+.chat-overlay.open { opacity: 1; pointer-events: all; }
+
+/* --- Chat Panel (right-side drawer) --- */
+.chat-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    height: 100vh;
+    background: white;
+    box-shadow: -4px 0 32px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    z-index: 1500;
+    overflow: hidden;
+    transition: right 0.3s ease;
 }
 
-.chat-panel.open {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-    pointer-events: all;
-}
+.chat-panel.open { right: 0; }
 
 /* --- Panel Header --- */
 .chat-panel-header {
@@ -1495,19 +1488,9 @@ footer strong {
 
 /* --- Responsive Chat --- */
 @media (max-width: 480px) {
-    .chat-panel {
-        width: 100vw;
-        right: 0;
-        bottom: 0;
-        border-radius: 20px 20px 0 0;
-        height: 75vh;
-    }
-    .chat-fab {
-        right: 16px;
-        bottom: 16px;
-    }
-    .chat-fab-label { display: none; }
-    .chat-fab { border-radius: 50%; width: 52px; height: 52px; padding: 0; justify-content: center; }
+    .chat-panel { width: 100vw; right: -100vw; }
+    .chat-panel.open { right: 0; }
+    .header-chat-btn span { display: none; }
 }
 
 /* =============================================

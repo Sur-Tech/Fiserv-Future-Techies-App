@@ -156,9 +156,13 @@ const ChatWidget = {
 
     toggle() {
         this.isOpen = !this.isOpen;
-        const panel = document.getElementById('chat-panel');
+        const panel   = document.getElementById('chat-panel');
+        const overlay = document.getElementById('chat-overlay');
+        const btn     = document.querySelector('.header-chat-btn');
         if (!panel) return;
         panel.classList.toggle('open', this.isOpen);
+        if (overlay) overlay.classList.toggle('open', this.isOpen);
+        if (btn)     btn.classList.toggle('active', this.isOpen);
 
         if (this.isOpen) {
             const input = document.getElementById('chat-input');
@@ -581,10 +585,49 @@ const TransferModal = {
 // INIT ON DOM READY
 // =============================================
 
+function injectChatWidget() {
+    if (document.getElementById('chat-panel')) return; // already in HTML
+    const wrap = document.createElement('div');
+    wrap.id = 'chat-widget';
+    wrap.innerHTML = `
+        <div class="chat-overlay" id="chat-overlay" onclick="ChatWidget.toggle()"></div>
+        <div class="chat-panel" id="chat-panel">
+            <div class="chat-panel-header">
+                <div class="chat-panel-title">
+                    <div class="chat-bot-avatar">🤖</div>
+                    <div>
+                        <div class="chat-panel-name">Domus</div>
+                        <div class="chat-panel-status" id="chat-status">● Ready</div>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="chat-clear-btn" onclick="ChatWidget.clearHistory()" title="Clear">🗑</button>
+                    <button class="chat-close-btn" onclick="ChatWidget.toggle()" title="Close">✕</button>
+                </div>
+            </div>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div id="chat-typing" class="chat-typing" style="display:none">
+                <div class="chat-typing-bubble"><span></span><span></span><span></span></div>
+                <div class="chat-typing-label">Domus is thinking…</div>
+            </div>
+            <div class="chat-suggestions" id="chat-suggestions">
+                <button class="chat-chip" onclick="ChatWidget.quickSend('How am I doing with my budget?')">📊 Budget</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('Where am I spending the most?')">💸 Top spending</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('Give me savings tips')">💡 Tips</button>
+            </div>
+            <div class="chat-input-row">
+                <input id="chat-input" class="chat-input" type="text" placeholder="Ask about your finances…" maxlength="500"
+                    onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ChatWidget.send();}">
+                <button class="chat-send-btn" id="chat-send-btn" onclick="ChatWidget.send()">➤</button>
+            </div>
+        </div>`;
+    document.body.appendChild(wrap);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    injectChatWidget();
     Tracker.init();
     ChatWidget.init();
     VoiceReminder.init();
-    // Greet the user after page is fully rendered
     setTimeout(() => VoiceReminder.greet(), 1200);
 });

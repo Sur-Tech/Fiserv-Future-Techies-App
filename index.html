@@ -31,9 +31,9 @@
                 <li class="tab" id="spending-analyzer" onclick="loadPage('spending-analyzer')">Spending Analyzer</li>
                 <li class="tab" id="utilities" onclick="loadPage('utilities')">Utilities</li>
                 <li class="tab" id="work" onclick="loadPage('work')">Work</li>
-                <li class="tab" id="chatbot" onclick="window.location='chatbot.html'">Chatbot</li>
             </ul>
         </nav>
+        <button class="header-chat-btn" onclick="ChatWidget.toggle()">💬 <span>Ask Domus</span></button>
     </header>
 
     <main>
@@ -209,11 +209,8 @@
          ========================================================= -->
     <div id="chat-widget">
 
-        <!-- Floating Action Button -->
-        <button class="chat-fab" id="chat-fab" onclick="ChatWidget.toggle()" title="Chat with Domus">
-            <span class="chat-fab-icon">💬</span>
-            <span class="chat-fab-label">AI Chat</span>
-        </button>
+        <!-- Backdrop -->
+        <div class="chat-overlay" id="chat-overlay" onclick="ChatWidget.toggle()"></div>
 
         <!-- Chat Panel -->
         <div class="chat-panel" id="chat-panel">
