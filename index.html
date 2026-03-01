@@ -37,6 +37,13 @@
 
     <main>
 
+        <!-- Personalized Greeting (shown after first visit) -->
+        <div class="personalized-greeting" id="personalized-greeting" style="display:none">
+            <span class="greeting-wave">👋</span>
+            <span id="greeting-text">Welcome back!</span>
+            <a id="greeting-action" href="#" onclick="return false;">Continue →</a>
+        </div>
+
         <!-- Hero Banner -->
         <section class="hero-banner">
             <div class="hero-content">
@@ -68,8 +75,8 @@
 
     </main>
 
-    <!-- Mission Section (full-width, outside main) -->
-    <section class="mission-section">
+    <!-- Mission Section (full-width, hidden when sub-page is active) -->
+    <section class="mission-section home-only">
         <div class="mission-card">
             <h2 class="section-heading">Our Mission</h2>
             <p class="mission-text">
@@ -80,8 +87,8 @@
         </div>
     </section>
 
-    <!-- Features Grid (full-width) -->
-    <section class="features-section">
+    <!-- Features Grid (full-width, hidden when sub-page is active) -->
+    <section class="features-section home-only">
         <h2 class="section-heading">Platform Features</h2>
         <div class="features-grid">
 
@@ -131,6 +138,69 @@
     <footer>
         <p>&copy; 2024 <strong>Fiserv CFO</strong> &mdash; Fiserv Future Techies Challenge</p>
     </footer>
+
+    <!-- =========================================================
+         AI CHAT WIDGET (persists across all pages)
+         ========================================================= -->
+    <div id="chat-widget">
+
+        <!-- Floating Action Button -->
+        <button class="chat-fab" id="chat-fab" onclick="ChatWidget.toggle()" title="Chat with CashLens AI">
+            <span class="chat-fab-icon">💬</span>
+            <span class="chat-fab-label">AI Chat</span>
+        </button>
+
+        <!-- Chat Panel -->
+        <div class="chat-panel" id="chat-panel">
+
+            <!-- Header -->
+            <div class="chat-panel-header">
+                <div class="chat-panel-title">
+                    <div class="chat-bot-avatar">🤖</div>
+                    <div>
+                        <div class="chat-panel-name">CashLens AI</div>
+                        <div class="chat-panel-status" id="chat-status">● Ready</div>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <button class="chat-clear-btn" onclick="ChatWidget.clearHistory()" title="Clear chat">🗑</button>
+                    <button class="chat-close-btn" onclick="ChatWidget.toggle()" title="Close">✕</button>
+                </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="chat-messages" id="chat-messages"></div>
+
+            <!-- Typing Indicator -->
+            <div id="chat-typing" class="chat-typing" style="display:none">
+                <div class="chat-typing-bubble">
+                    <span></span><span></span><span></span>
+                </div>
+                <div class="chat-typing-label">CashLens AI is thinking…</div>
+            </div>
+
+            <!-- Suggested Prompts -->
+            <div class="chat-suggestions" id="chat-suggestions">
+                <button class="chat-chip" onclick="ChatWidget.quickSend('How am I doing with my budget this month?')">📊 Budget status</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('Where am I spending the most money?')">💸 Top spending</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('Give me 3 tips to save more money.')">💡 Saving tips</button>
+            </div>
+
+            <!-- Input Row -->
+            <div class="chat-input-row">
+                <input
+                    id="chat-input"
+                    class="chat-input"
+                    type="text"
+                    placeholder="Ask about your finances…"
+                    maxlength="500"
+                    onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); ChatWidget.send(); }"
+                >
+                <button class="chat-send-btn" id="chat-send-btn" onclick="ChatWidget.send()">➤</button>
+            </div>
+
+        </div>
+    </div>
 
 </body>
 </html>
