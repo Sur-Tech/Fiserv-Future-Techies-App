@@ -10,313 +10,119 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* ── Chatbot Page ── */
-        .cb-main {
-            min-height: calc(100vh - 68px - 60px);
-            display: flex;
-            flex-direction: column;
-            background: #f0f4f8;
-        }
+        .cb-main { min-height: calc(100vh - 68px - 60px); display: flex; flex-direction: column; background: #f0f4f8; }
 
         /* Hero */
-        .cb-hero {
-            background: linear-gradient(140deg, #000d1f 0%, #001F3F 55%, #0d3b6e 100%);
-            padding: 48px 40px 52px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .cb-hero::before {
-            content: '';
-            position: absolute;
-            top: -40%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(255,120,0,0.18) 0%, transparent 65%);
-            pointer-events: none;
-        }
-        .cb-badge {
-            display: inline-block;
-            background: rgba(255,120,0,0.15);
-            border: 1px solid rgba(255,120,0,0.4);
-            color: #ff7800;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 6px 16px;
-            border-radius: 100px;
-            margin-bottom: 16px;
-        }
-        .cb-hero-title {
-            font-size: clamp(2rem, 5vw, 3.2rem);
-            font-weight: 800;
-            color: #fff;
-            margin: 0 0 10px;
-            letter-spacing: -0.03em;
-        }
-        .cb-hero-subtitle {
-            color: rgba(255,255,255,0.65);
-            font-size: 1rem;
-            margin: 0;
-        }
+        .cb-hero { background: linear-gradient(140deg, #000d1f 0%, #001F3F 55%, #0d3b6e 100%); padding: 40px 40px 44px; text-align: center; position: relative; overflow: hidden; }
+        .cb-hero::before { content: ''; position: absolute; top: -40%; left: 50%; transform: translateX(-50%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(255,120,0,0.18) 0%, transparent 65%); pointer-events: none; }
+        .cb-badge { display: inline-block; background: rgba(255,120,0,0.15); border: 1px solid rgba(255,120,0,0.4); color: #ff7800; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 14px; border-radius: 100px; margin-bottom: 12px; }
+        .cb-hero-title { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; color: #fff; margin: 0 0 8px; letter-spacing: -0.03em; }
+        .cb-hero-subtitle { color: rgba(255,255,255,0.65); font-size: 0.95rem; margin: 0; }
 
-        /* ── Chat Container ── */
-        .cb-container {
-            max-width: 860px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 24px 20px 40px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+        /* Container */
+        .cb-container { max-width: 900px; width: 100%; margin: 0 auto; padding: 20px 20px 40px; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+
+        /* ── Today's Briefing ── */
+        .cb-briefing { background: #fff; border-radius: 18px; box-shadow: 0 2px 16px rgba(0,31,63,0.09); overflow: hidden; }
+        .cb-briefing-header { background: linear-gradient(135deg, #001F3F, #0d3b6e); color: #fff; padding: 16px 22px; display: flex; align-items: center; justify-content: space-between; }
+        .cb-briefing-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .cb-briefing-date { font-size: 12px; color: rgba(255,255,255,0.65); }
+        .cb-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+        .cb-stat { padding: 16px 20px; border-right: 1px solid #e8edf2; }
+        .cb-stat:last-child { border-right: none; }
+        .cb-stat-label { font-size: 11px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+        .cb-stat-value { font-size: 20px; font-weight: 800; color: #001F3F; }
+        .cb-stat-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+        /* ── Today's List ── */
+        .cb-today-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .cb-list-panel { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,31,63,0.07); overflow: hidden; }
+        .cb-list-head { padding: 14px 18px; border-bottom: 1px solid #e8edf2; font-size: 14px; font-weight: 700; color: #001F3F; display: flex; align-items: center; gap: 8px; }
+        .cb-list-body { padding: 4px 0; max-height: 240px; overflow-y: auto; }
+        .cb-list-empty { padding: 20px; text-align: center; font-size: 13px; color: #94a3b8; }
+
+        /* Upcoming bill row */
+        .cb-bill-row { display: flex; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid #f1f5f9; }
+        .cb-bill-row:last-child { border-bottom: none; }
+        .cb-bill-icon { width: 34px; height: 34px; border-radius: 10px; background: #f0f4f8; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .cb-bill-info { flex: 1; min-width: 0; }
+        .cb-bill-name { font-size: 13px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cb-bill-cat { font-size: 11px; color: #94a3b8; }
+        .cb-bill-right { text-align: right; flex-shrink: 0; }
+        .cb-bill-amt { font-size: 14px; font-weight: 700; color: #001F3F; }
+        .cb-bill-due { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+        .due-today  { background: #fef2f2; color: #dc2626; }
+        .due-soon   { background: #fff7ed; color: #ea580c; }
+        .due-week   { background: #fefce8; color: #ca8a04; }
+        .due-later  { background: #f0fdf4; color: #16a34a; }
+        .due-past   { background: #fef2f2; color: #dc2626; }
+
+        /* Recent transaction row */
+        .cb-tx-row { display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-bottom: 1px solid #f1f5f9; }
+        .cb-tx-row:last-child { border-bottom: none; }
+        .cb-tx-dot { width: 8px; height: 8px; border-radius: 50%; background: #0d3b6e; flex-shrink: 0; }
+        .cb-tx-info { flex: 1; min-width: 0; }
+        .cb-tx-name { font-size: 13px; font-weight: 600; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cb-tx-cat  { font-size: 11px; color: #94a3b8; }
+        .cb-tx-right { text-align: right; flex-shrink: 0; }
+        .cb-tx-amt  { font-size: 13px; font-weight: 700; color: #dc2626; }
+        .cb-tx-date { font-size: 11px; color: #94a3b8; }
 
         /* ── Chat Panel ── */
-        .cb-panel {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 4px 24px rgba(0,31,63,0.10);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Panel Header */
-        .cb-panel-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 18px 24px;
-            border-bottom: 1px solid #e8edf2;
-            background: #fff;
-        }
-        .cb-avatar {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, #001F3F, #0d3b6e);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-        }
-        .cb-panel-name {
-            font-size: 17px;
-            font-weight: 700;
-            color: #001F3F;
-        }
-        .cb-panel-status {
-            font-size: 12px;
-            color: #22c55e;
-            font-weight: 500;
-        }
-        .cb-header-actions {
-            margin-left: auto;
-            display: flex;
-            gap: 8px;
-        }
-        .cb-action-btn {
-            background: #f0f4f8;
-            border: none;
-            border-radius: 8px;
-            padding: 7px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-            transition: background 0.15s, color 0.15s;
-        }
+        .cb-panel { background: #fff; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,31,63,0.10); overflow: hidden; display: flex; flex-direction: column; }
+        .cb-panel-header { display: flex; align-items: center; gap: 14px; padding: 16px 22px; border-bottom: 1px solid #e8edf2; }
+        .cb-avatar { width: 42px; height: 42px; background: linear-gradient(135deg, #001F3F, #0d3b6e); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .cb-panel-name { font-size: 16px; font-weight: 700; color: #001F3F; }
+        .cb-panel-status { font-size: 12px; color: #22c55e; font-weight: 500; }
+        .cb-header-actions { margin-left: auto; display: flex; gap: 8px; }
+        .cb-action-btn { background: #f0f4f8; border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; transition: background 0.15s, color 0.15s; }
         .cb-action-btn:hover { background: #e2e8f0; color: #001F3F; }
 
-        /* Messages area */
-        .cb-messages {
-            flex: 1;
-            min-height: 440px;
-            max-height: 520px;
-            overflow-y: auto;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            scroll-behavior: smooth;
-        }
-
-        /* Bubbles */
-        .cb-msg {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 16px;
-            font-size: 14.5px;
-            line-height: 1.55;
-            word-break: break-word;
-        }
-        .cb-msg-user {
-            align-self: flex-end;
-            background: linear-gradient(135deg, #001F3F, #0d3b6e);
-            color: #fff;
-            border-bottom-right-radius: 4px;
-        }
-        .cb-msg-ai {
-            align-self: flex-start;
-            background: #f1f5f9;
-            color: #1e293b;
-            border-bottom-left-radius: 4px;
-            white-space: pre-wrap;
-        }
+        .cb-messages { flex: 1; min-height: 400px; max-height: 480px; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
+        .cb-msg { max-width: 78%; padding: 12px 16px; border-radius: 16px; font-size: 14.5px; line-height: 1.55; word-break: break-word; }
+        .cb-msg-user { align-self: flex-end; background: linear-gradient(135deg, #001F3F, #0d3b6e); color: #fff; border-bottom-right-radius: 4px; }
+        .cb-msg-ai { align-self: flex-start; background: #f1f5f9; color: #1e293b; border-bottom-left-radius: 4px; white-space: pre-wrap; }
         .cb-msg-ai.error { background: #fef2f2; color: #dc2626; }
 
-        /* Typing indicator */
-        .cb-typing {
-            align-self: flex-start;
-            display: none;
-            gap: 8px;
-            align-items: center;
-            padding: 10px 16px;
-            background: #f1f5f9;
-            border-radius: 16px;
-            border-bottom-left-radius: 4px;
-        }
+        .cb-typing { align-self: flex-start; display: none; gap: 8px; align-items: center; padding: 10px 16px; background: #f1f5f9; border-radius: 16px; border-bottom-left-radius: 4px; }
         .cb-typing.visible { display: flex; }
-        .cb-typing-dots {
-            display: flex;
-            gap: 4px;
-        }
-        .cb-typing-dots span {
-            width: 7px;
-            height: 7px;
-            background: #94a3b8;
-            border-radius: 50%;
-            animation: cb-bounce 1.3s infinite;
-        }
+        .cb-typing-dots { display: flex; gap: 4px; }
+        .cb-typing-dots span { width: 7px; height: 7px; background: #94a3b8; border-radius: 50%; animation: cb-bounce 1.3s infinite; }
         .cb-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
         .cb-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes cb-bounce {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
-            30% { transform: translateY(-6px); opacity: 1; }
-        }
-        .cb-typing-label {
-            font-size: 12px;
-            color: #94a3b8;
-            font-style: italic;
-        }
+        @keyframes cb-bounce { 0%,60%,100%{transform:translateY(0);opacity:0.5} 30%{transform:translateY(-6px);opacity:1} }
+        .cb-typing-label { font-size: 12px; color: #94a3b8; font-style: italic; }
 
-        /* Quick chips */
-        .cb-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 0 24px 16px;
-        }
-        .cb-chip {
-            background: #f0f4f8;
-            border: 1px solid #e2e8f0;
-            border-radius: 100px;
-            padding: 8px 16px;
-            font-size: 13px;
-            color: #475569;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-family: inherit;
-            font-weight: 500;
-        }
-        .cb-chip:hover {
-            background: #001F3F;
-            color: #fff;
-            border-color: #001F3F;
-        }
+        .cb-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 14px; }
+        .cb-chip { background: #f0f4f8; border: 1px solid #e2e8f0; border-radius: 100px; padding: 7px 15px; font-size: 12.5px; color: #475569; cursor: pointer; transition: all 0.15s; font-family: inherit; font-weight: 500; }
+        .cb-chip:hover { background: #001F3F; color: #fff; border-color: #001F3F; }
 
-        /* Input row */
-        .cb-input-row {
-            display: flex;
-            gap: 10px;
-            padding: 16px 24px 20px;
-            border-top: 1px solid #e8edf2;
-            background: #fff;
-        }
-        .cb-input {
-            flex: 1;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 12px 16px;
-            font-size: 14px;
-            font-family: inherit;
-            color: #1e293b;
-            outline: none;
-            transition: border-color 0.2s;
-            background: #f8fafc;
-        }
+        .cb-input-row { display: flex; gap: 10px; padding: 14px 20px 18px; border-top: 1px solid #e8edf2; background: #fff; }
+        .cb-input { flex: 1; border: 2px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; font-size: 14px; font-family: inherit; color: #1e293b; outline: none; transition: border-color 0.2s; background: #f8fafc; }
         .cb-input:focus { border-color: #001F3F; background: #fff; }
         .cb-input::placeholder { color: #94a3b8; }
-        .cb-send-btn {
-            background: linear-gradient(135deg, #001F3F, #0d3b6e);
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            padding: 12px 22px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s, transform 0.1s;
-            font-family: inherit;
-            white-space: nowrap;
-        }
+        .cb-send-btn { background: linear-gradient(135deg, #001F3F, #0d3b6e); color: #fff; border: none; border-radius: 12px; padding: 12px 22px; font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; font-family: inherit; }
         .cb-send-btn:hover { opacity: 0.88; }
         .cb-send-btn:active { transform: scale(0.96); }
         .cb-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* History panel */
-        .cb-history-panel {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,31,63,0.07);
-            padding: 20px 24px;
-        }
-        .cb-history-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #001F3F;
-            margin: 0 0 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .cb-history-empty {
-            color: #94a3b8;
-            font-size: 13px;
-            text-align: center;
-            padding: 12px 0;
-        }
-        .cb-history-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-        .cb-history-item {
-            padding: 9px 14px;
-            background: #f8fafc;
-            border-radius: 10px;
-            font-size: 13px;
-            color: #475569;
-            cursor: pointer;
-            transition: background 0.15s;
-            border: 1px solid #e2e8f0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        /* History */
+        .cb-history-panel { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,31,63,0.07); padding: 18px 22px; }
+        .cb-history-title { font-size: 14px; font-weight: 700; color: #001F3F; margin: 0 0 12px; }
+        .cb-history-empty { color: #94a3b8; font-size: 13px; text-align: center; padding: 10px 0; }
+        .cb-history-list { display: flex; flex-direction: column; gap: 6px; }
+        .cb-history-item { padding: 9px 14px; background: #f8fafc; border-radius: 10px; font-size: 13px; color: #475569; cursor: pointer; transition: background 0.15s; border: 1px solid #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cb-history-item:hover { background: #e8edf5; color: #001F3F; }
 
-        /* Responsive */
-        @media (max-width: 640px) {
-            .cb-hero { padding: 36px 20px 40px; }
-            .cb-messages { min-height: 320px; max-height: 380px; padding: 16px; }
-            .cb-input-row { padding: 12px 16px 16px; }
-            .cb-chips { padding: 0 16px 12px; }
+        /* Skeleton loader */
+        .cb-skeleton { background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+        @media(max-width:640px) {
+            .cb-stats-grid { grid-template-columns: repeat(2,1fr); }
+            .cb-today-grid { grid-template-columns: 1fr; }
+            .cb-hero { padding: 30px 20px 34px; }
+            .cb-messages { min-height: 300px; max-height: 360px; }
             .cb-msg { max-width: 90%; }
         }
     </style>
@@ -324,12 +130,9 @@
 
 <body>
 
-    <!-- ── Header ── -->
     <header class="header">
         <div class="main-header">
-            <h2 class="topheader">
-                <a class="logo" href="index.html">Domus</a>
-            </h2>
+            <h2 class="topheader"><a class="logo" href="index.html">Domus</a></h2>
         </div>
         <nav class="centertabs">
             <ul class="other_tabs1">
@@ -346,23 +149,71 @@
 
     <main class="cb-main">
 
-        <!-- Hero -->
         <section class="cb-hero">
             <div class="cb-badge">AI Financial Advisor</div>
             <h1 class="cb-hero-title">Ask Domus</h1>
-            <p class="cb-hero-subtitle">Your personal AI — ask anything about your finances</p>
+            <p class="cb-hero-subtitle">Powered by real bank data &mdash; ask anything about your finances</p>
         </section>
 
         <div class="cb-container">
 
-            <!-- Main Chat Panel -->
-            <div class="cb-panel">
+            <!-- ── Today's Briefing ── -->
+            <div class="cb-briefing">
+                <div class="cb-briefing-header">
+                    <div class="cb-briefing-title">📅 Today's Briefing</div>
+                    <div class="cb-briefing-date" id="briefing-date">Loading…</div>
+                </div>
+                <div class="cb-stats-grid">
+                    <div class="cb-stat">
+                        <div class="cb-stat-label">Today's Spending</div>
+                        <div class="cb-stat-value" id="stat-today">—</div>
+                        <div class="cb-stat-sub">so far today</div>
+                    </div>
+                    <div class="cb-stat">
+                        <div class="cb-stat-label">This Week</div>
+                        <div class="cb-stat-value" id="stat-week">—</div>
+                        <div class="cb-stat-sub">since Monday</div>
+                    </div>
+                    <div class="cb-stat">
+                        <div class="cb-stat-label">Upcoming Bills</div>
+                        <div class="cb-stat-value" id="stat-bills">—</div>
+                        <div class="cb-stat-sub">next 30 days</div>
+                    </div>
+                    <div class="cb-stat">
+                        <div class="cb-stat-label">Last Transaction</div>
+                        <div class="cb-stat-value" id="stat-last">—</div>
+                        <div class="cb-stat-sub" id="stat-last-name">—</div>
+                    </div>
+                </div>
+            </div>
 
-                <!-- Header -->
+            <!-- ── Today's List ── -->
+            <div class="cb-today-grid">
+
+                <!-- Upcoming Bills -->
+                <div class="cb-list-panel">
+                    <div class="cb-list-head">🔔 Upcoming Bills</div>
+                    <div class="cb-list-body" id="upcoming-list">
+                        <div class="cb-list-empty">Loading…</div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="cb-list-panel">
+                    <div class="cb-list-head">💳 Recent Transactions</div>
+                    <div class="cb-list-body" id="recent-list">
+                        <div class="cb-list-empty">Loading…</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ── Chat Panel ── -->
+            <div class="cb-panel">
                 <div class="cb-panel-header">
                     <div class="cb-avatar">🤖</div>
                     <div>
-                        <div class="cb-panel-name">Domus</div>
+                        <div class="cb-panel-name">Domus AI</div>
                         <div class="cb-panel-status" id="cb-status">● Ready</div>
                     </div>
                     <div class="cb-header-actions">
@@ -370,42 +221,33 @@
                     </div>
                 </div>
 
-                <!-- Messages -->
                 <div class="cb-messages" id="cb-messages"></div>
 
-                <!-- Typing -->
                 <div class="cb-typing" id="cb-typing">
-                    <div class="cb-typing-dots">
-                        <span></span><span></span><span></span>
-                    </div>
+                    <div class="cb-typing-dots"><span></span><span></span><span></span></div>
                     <div class="cb-typing-label">Domus is thinking…</div>
                 </div>
 
                 <!-- Quick Chips -->
                 <div class="cb-chips" id="cb-chips">
                     <button class="cb-chip" onclick="quickSend('How am I doing with my budget this month?')">📊 Budget status</button>
-                    <button class="cb-chip" onclick="quickSend('Where am I spending the most money?')">💸 Top spending</button>
-                    <button class="cb-chip" onclick="quickSend('Give me 3 tips to save more money.')">💡 Saving tips</button>
-                    <button class="cb-chip" onclick="quickSend('Are there any subscriptions I should cancel?')">🔁 Subscriptions</button>
-                    <button class="cb-chip" onclick="quickSend('What is my biggest spending category?')">📈 Top category</button>
+                    <button class="cb-chip" onclick="quickSend('Where am I spending the most?')">💸 Top spending</button>
+                    <button class="cb-chip" onclick="quickSend('What bills are coming up?')">🔔 Upcoming bills</button>
+                    <button class="cb-chip" onclick="quickSend('Give me 3 tips to save more money')">💡 Saving tips</button>
+                    <button class="cb-chip" onclick="quickSend('Am I on track this month?')">📈 On track?</button>
+                    <button class="cb-chip" onclick="quickSend('Are there any unusual or large transactions?')">⚠️ Unusual spend</button>
+                    <button class="cb-chip" onclick="quickSend('What subscriptions am I paying for?')">🔁 Subscriptions</button>
+                    <button class="cb-chip" onclick="quickSend('How much did I spend this week?')">📅 This week</button>
                 </div>
 
-                <!-- Input -->
                 <div class="cb-input-row">
-                    <input
-                        id="cb-input"
-                        class="cb-input"
-                        type="text"
-                        placeholder="Ask about your finances…"
-                        maxlength="500"
-                        onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendMessage(); }"
-                    >
+                    <input id="cb-input" class="cb-input" type="text" placeholder="Ask anything about your finances…" maxlength="500"
+                        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}">
                     <button class="cb-send-btn" id="cb-send-btn" onclick="sendMessage()">Send ↑</button>
                 </div>
-
             </div>
 
-            <!-- Recent Conversation History -->
+            <!-- Recent Questions History -->
             <div class="cb-history-panel">
                 <div class="cb-history-title">🕓 Recent Questions</div>
                 <div id="cb-history-list" class="cb-history-list">
@@ -414,7 +256,6 @@
             </div>
 
         </div>
-
     </main>
 
     <footer>
@@ -423,48 +264,141 @@
 
     <script>
         const CB_API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-            ? "http://localhost:5000"
-            : "";
-
+            ? "http://localhost:5000" : "";
         const CB_HISTORY_KEY = "cb_question_history";
         const CB_MAX_HISTORY = 10;
 
-        // ── State ──────────────────────────────────────────────────────────────
         let questionHistory = JSON.parse(localStorage.getItem(CB_HISTORY_KEY) || "[]");
 
-        // ── Init ───────────────────────────────────────────────────────────────
+        // ── Init ───────────────────────────────────────────────────────────
         document.addEventListener("DOMContentLoaded", () => {
             renderHistory();
             addWelcomeMessage();
+            loadTodaySummary();
         });
 
-        function addWelcomeMessage() {
-            appendAI("Hi! I'm **Domus**, your personal financial advisor 👋\n\nI can help you understand your spending patterns, find saving opportunities, and give you personalized financial insights.\n\nWhat would you like to know about your finances today?");
+        // ── Load Today Summary ─────────────────────────────────────────────
+        async function loadTodaySummary() {
+            try {
+                const res  = await fetch(CB_API_BASE + "/today");
+                const json = await res.json();
+                if (!json.success) return;
+                const d = json.data;
+
+                // Header date
+                const dateObj = new Date(d.today_date + "T00:00:00");
+                document.getElementById("briefing-date").textContent =
+                    dateObj.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+                // Stats
+                document.getElementById("stat-today").textContent = "$" + d.today_spent.toFixed(2);
+                document.getElementById("stat-week").textContent  = "$" + d.week_spent.toFixed(2);
+                document.getElementById("stat-bills").textContent = d.upcoming_bills.length;
+
+                if (d.recent_transactions && d.recent_transactions.length) {
+                    const last = d.recent_transactions[0];
+                    document.getElementById("stat-last").textContent      = "$" + last.amount.toFixed(2);
+                    document.getElementById("stat-last-name").textContent = last.name;
+                }
+
+                renderUpcoming(d.upcoming_bills);
+                renderRecent(d.recent_transactions);
+            } catch (e) {
+                document.getElementById("briefing-date").textContent = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+                document.getElementById("upcoming-list").innerHTML = '<div class="cb-list-empty">Connect to backend to load data.</div>';
+                document.getElementById("recent-list").innerHTML   = '<div class="cb-list-empty">Connect to backend to load data.</div>';
+            }
         }
 
-        // ── Send Message ───────────────────────────────────────────────────────
+        function renderUpcoming(bills) {
+            const el = document.getElementById("upcoming-list");
+            if (!bills || !bills.length) {
+                el.innerHTML = '<div class="cb-list-empty">No upcoming bills detected.</div>';
+                return;
+            }
+            el.innerHTML = bills.map(b => {
+                const icon = categoryIcon(b.category);
+                let dueLabel, dueClass;
+                if (b.days_until < 0)      { dueLabel = `${Math.abs(b.days_until)}d overdue`; dueClass = "due-past"; }
+                else if (b.days_until === 0){ dueLabel = "Due today";   dueClass = "due-today"; }
+                else if (b.days_until === 1){ dueLabel = "Tomorrow";    dueClass = "due-soon"; }
+                else if (b.days_until <= 7) { dueLabel = `In ${b.days_until}d`; dueClass = "due-week"; }
+                else                        { dueLabel = `In ${b.days_until}d`; dueClass = "due-later"; }
+                return `<div class="cb-bill-row">
+                    <div class="cb-bill-icon">${icon}</div>
+                    <div class="cb-bill-info">
+                        <div class="cb-bill-name">${esc(b.merchant)}</div>
+                        <div class="cb-bill-cat">${esc(b.category)}${b.subscription ? ' · subscription' : ''}</div>
+                    </div>
+                    <div class="cb-bill-right">
+                        <div class="cb-bill-amt">$${b.amount.toFixed(2)}</div>
+                        <div class="cb-bill-due ${dueClass}">${dueLabel}</div>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        function renderRecent(txns) {
+            const el = document.getElementById("recent-list");
+            if (!txns || !txns.length) {
+                el.innerHTML = '<div class="cb-list-empty">No recent transactions.</div>';
+                return;
+            }
+            el.innerHTML = txns.map(tx => {
+                const dateStr = new Date(tx.date + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+                return `<div class="cb-tx-row">
+                    <div class="cb-tx-dot"></div>
+                    <div class="cb-tx-info">
+                        <div class="cb-tx-name">${esc(tx.name)}</div>
+                        <div class="cb-tx-cat">${esc(tx.category)}</div>
+                    </div>
+                    <div class="cb-tx-right">
+                        <div class="cb-tx-amt">-$${tx.amount.toFixed(2)}</div>
+                        <div class="cb-tx-date">${dateStr}</div>
+                    </div>
+                </div>`;
+            }).join("");
+        }
+
+        function categoryIcon(cat) {
+            if (!cat) return "💳";
+            const c = cat.toLowerCase();
+            if (c.includes("food") || c.includes("dining") || c.includes("restaurant")) return "🍔";
+            if (c.includes("rent") || c.includes("utilities") || c.includes("housing"))  return "🏠";
+            if (c.includes("transport") || c.includes("travel") || c.includes("uber"))   return "🚗";
+            if (c.includes("entertainment") || c.includes("subscription"))               return "🎬";
+            if (c.includes("shopping") || c.includes("merchandise"))                     return "🛍️";
+            if (c.includes("health") || c.includes("medical"))                           return "💊";
+            if (c.includes("education") || c.includes("school"))                         return "📚";
+            if (c.includes("transfer"))                                                   return "💸";
+            return "📄";
+        }
+
+        // ── Welcome message ────────────────────────────────────────────────
+        function addWelcomeMessage() {
+            const hour = new Date().getHours();
+            const greet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+            appendAI(`${greet}! I'm **Domus**, your personal AI financial advisor 👋\n\nI have access to your real transaction data — ask me anything:\n• "What are my biggest expenses?"\n• "Am I on track this month?"\n• "What bills are coming up?"\n• "Give me saving tips based on my spending"\n\nWhat would you like to know?`);
+        }
+
+        // ── Send Message ───────────────────────────────────────────────────
         async function sendMessage() {
             const input   = document.getElementById("cb-input");
             const sendBtn = document.getElementById("cb-send-btn");
             const message = input.value.trim();
             if (!message) return;
 
-            input.value    = "";
-            input.disabled = true;
-            sendBtn.disabled = true;
-
+            input.value = ""; input.disabled = true; sendBtn.disabled = true;
             appendUser(message);
             showTyping(true);
             setStatus("Thinking…", "#f59e0b");
-
-            // Save to history
             saveToHistory(message);
 
             try {
                 const res  = await fetch(CB_API_BASE + "/chat", {
-                    method:  "POST",
+                    method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body:    JSON.stringify({ message }),
+                    body: JSON.stringify({ message }),
                 });
                 const json = await res.json();
                 showTyping(false);
@@ -480,18 +414,13 @@
                 appendAI("Could not connect to Domus. Make sure the backend is running.", true);
                 setStatus("● Offline", "#ef4444");
             } finally {
-                input.disabled   = false;
-                sendBtn.disabled = false;
-                input.focus();
+                input.disabled = false; sendBtn.disabled = false; input.focus();
             }
         }
 
-        function quickSend(text) {
-            document.getElementById("cb-input").value = text;
-            sendMessage();
-        }
+        function quickSend(text) { document.getElementById("cb-input").value = text; sendMessage(); }
 
-        // ── Render Helpers ─────────────────────────────────────────────────────
+        // ── Render Helpers ─────────────────────────────────────────────────
         function appendUser(text) {
             const el = document.createElement("div");
             el.className = "cb-msg cb-msg-user";
@@ -503,58 +432,31 @@
         function appendAI(text, isError = false) {
             const el = document.createElement("div");
             el.className = "cb-msg cb-msg-ai" + (isError ? " error" : "");
-            // Bold **text** support
             el.innerHTML = esc(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
             getMessages().appendChild(el);
             scrollToBottom();
         }
 
         function esc(str) {
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;");
+            return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
         }
 
-        function showTyping(visible) {
-            const el = document.getElementById("cb-typing");
-            el.classList.toggle("visible", visible);
-            scrollToBottom();
-        }
-
-        function setStatus(text, color) {
-            const el = document.getElementById("cb-status");
-            if (el) { el.textContent = text; el.style.color = color || "#22c55e"; }
-        }
-
+        function showTyping(v) { document.getElementById("cb-typing").classList.toggle("visible", v); scrollToBottom(); }
+        function setStatus(t, c) { const el = document.getElementById("cb-status"); if(el){el.textContent=t;el.style.color=c||"#22c55e";} }
         function getMessages() { return document.getElementById("cb-messages"); }
+        function scrollToBottom() { const m = getMessages(); m.scrollTop = m.scrollHeight; }
 
-        function scrollToBottom() {
-            const msgs = getMessages();
-            msgs.scrollTop = msgs.scrollHeight;
-        }
+        function clearChat() { getMessages().innerHTML = ""; addWelcomeMessage(); setStatus("● Ready","#22c55e"); }
 
-        // ── Clear ──────────────────────────────────────────────────────────────
-        function clearChat() {
-            getMessages().innerHTML = "";
-            addWelcomeMessage();
-            setStatus("● Ready", "#22c55e");
-        }
-
-        // ── History ────────────────────────────────────────────────────────────
+        // ── History ────────────────────────────────────────────────────────
         function saveToHistory(q) {
             questionHistory = [q, ...questionHistory.filter(x => x !== q)].slice(0, CB_MAX_HISTORY);
             localStorage.setItem(CB_HISTORY_KEY, JSON.stringify(questionHistory));
             renderHistory();
         }
-
         function renderHistory() {
             const list = document.getElementById("cb-history-list");
-            if (!questionHistory.length) {
-                list.innerHTML = '<p class="cb-history-empty">No recent questions yet.</p>';
-                return;
-            }
+            if (!questionHistory.length) { list.innerHTML = '<p class="cb-history-empty">No recent questions yet.</p>'; return; }
             list.innerHTML = questionHistory.map(q =>
                 `<div class="cb-history-item" onclick="quickSend(${JSON.stringify(q)})">${esc(q)}</div>`
             ).join("");

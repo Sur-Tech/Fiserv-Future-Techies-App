@@ -562,6 +562,16 @@ def _fmt_budgets(budgets):
     return "\n".join(f"  - {cat}: ${info['limit']:.2f}/month (set by {info['set_by']})"
                      for cat, info in budgets.items())
 
+def _tx_category(tx):
+    """Extract category string from a single transaction dict."""
+    pfc = tx.get("personal_finance_category")
+    if pfc and isinstance(pfc, dict) and pfc.get("primary"):
+        return pfc["primary"].replace("_", " ").title()
+    raw = tx.get("category")
+    if isinstance(raw, list) and raw:
+        return raw[0]
+    return str(raw) if raw else "Other"
+
 
 def groq_spending_report(stats, budgets, period_days):
     prompt = f"""You are Domus, a personal financial advisor writing a report directly to the user.
@@ -867,22 +877,64 @@ def _rule_based_chat(message, stats, budgets):  # noqa: C901
     )
 
 
-def groq_chat(user_message, stats, budgets):
+def groq_chat(user_message, stats, budgets, all_tx=None):
     safe_msg = guard_prompt_injection(sanitize_text(user_message, _MAX_CHAT_MESSAGE_LEN))
     if not groq_client:
         return _rule_based_chat(safe_msg, stats, budgets)
-    prompt = f"""You are Domus, a friendly personal financial advisor.
-Answer the user's question using their actual spending data below.
-Be conversational and specific. Under 200 words.
-Only discuss topics related to personal finance and the data provided.
-USER'S DATA:
-- Total spent: ${stats['total_spent']:.2f}
-- Net cash flow: ${stats['net_cash_flow']:.2f}
-- Avg daily spend: ${stats['avg_daily_spend']:.2f}
-- Top category: {stats.get('top_category','N/A')} (${stats.get('top_category_amount',0):.2f})
-SPENDING BY CATEGORY:\n{_fmt_categories(stats)}
-THEIR BUDGETS:\n{_fmt_budgets(budgets)}
+
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Recent 10 transactions
+    recent_ctx = ""
+    recurring_ctx = ""
+    if all_tx:
+        recent = sorted(
+            [tx for tx in all_tx if float(tx.get("amount", 0) or 0) > 0],
+            key=lambda x: str(x.get("date", "")), reverse=True
+        )[:10]
+        lines = [
+            f"  {tx.get('date','')} | {tx.get('merchant_name') or tx.get('name','?')} | ${float(tx.get('amount',0)):.2f} | {_tx_category(tx)}"
+            for tx in recent
+        ]
+        recent_ctx = "RECENT TRANSACTIONS (newest first):\n" + "\n".join(lines)
+
+        recurring = detect_recurring_transactions(all_tx)
+        if recurring:
+            rec_lines = [
+                f"  {r['merchant']}: ~${r['avg_amount']:.2f} ({'subscription' if r['is_subscription'] else 'recurring'}, {r['category']})"
+                for r in recurring[:6]
+            ]
+            recurring_ctx = "RECURRING / SUBSCRIPTIONS:\n" + "\n".join(rec_lines)
+
+    prompt = f"""You are Domus, a friendly personal AI financial advisor.
+Answer the user's question using ONLY their real spending data below. Be conversational, specific, and concise (under 200 words).
+Today's date: {today_str}
+
+── SPENDING SUMMARY (last 30 days) ──
+- Total spent:       ${stats['total_spent']:.2f}
+- Income recorded:   ${stats.get('total_income', 0):.2f}
+- Net cash flow:     ${stats['net_cash_flow']:.2f}
+- Daily average:     ${stats['avg_daily_spend']:.2f}/day
+- Avg per purchase:  ${stats.get('avg_transaction', 0):.2f}
+- Transactions:      {stats['transaction_count']}
+- Top category:      {stats.get('top_category','N/A')} (${stats.get('top_category_amount',0):.2f})
+- Biggest spend day: {stats.get('biggest_expense_day','N/A')}
+
+── BY CATEGORY ──
+{_fmt_categories(stats)}
+
+── TOP MERCHANTS ──
+{_fmt_merchants(stats)}
+
+── BUDGETS ──
+{_fmt_budgets(budgets)}
+
+{recent_ctx}
+
+{recurring_ctx}
+
 USER'S QUESTION: {safe_msg}"""
+
     result = groq_generate(prompt)
     if "unavailable" in result.lower():
         return _rule_based_chat(safe_msg, stats, budgets)
@@ -954,6 +1006,71 @@ def home():
                    "GET /anomalies","POST /budgets/auto","POST /budgets/set",
                    "GET /budgets","POST /chat","GET /history",
                    "POST /simulate","POST /reset","GET /health"])
+
+
+@app.route("/today", methods=["GET"])
+@require_auth
+def today_summary():
+    user_id = get_user_id()
+    access_token, _ = load_token(user_id)
+    all_tx, err_resp = _resolve_transactions(user_id, access_token, 90)
+    if err_resp: return err_resp
+
+    today_date = datetime.now(timezone.utc).date()
+    today_str  = today_date.strftime("%Y-%m-%d")
+    week_start = (today_date - timedelta(days=today_date.weekday())).strftime("%Y-%m-%d")
+
+    # Today's and this-week's spending
+    today_spent = sum(float(tx.get("amount", 0) or 0) for tx in all_tx
+                      if str(tx.get("date", "")) == today_str and float(tx.get("amount", 0) or 0) > 0)
+    week_spent  = sum(float(tx.get("amount", 0) or 0) for tx in all_tx
+                      if str(tx.get("date", "")) >= week_start and float(tx.get("amount", 0) or 0) > 0)
+
+    # Recent 5 transactions
+    recent = sorted([tx for tx in all_tx if float(tx.get("amount", 0) or 0) > 0],
+                    key=lambda x: str(x.get("date", "")), reverse=True)[:5]
+    recent_simple = [{"name":    tx.get("merchant_name") or tx.get("name") or "Unknown",
+                      "amount":  round(float(tx.get("amount", 0) or 0), 2),
+                      "date":    str(tx.get("date", "")),
+                      "category": _tx_category(tx)} for tx in recent]
+
+    # Upcoming bills: recurring merchants + estimated next due date
+    recurring = detect_recurring_transactions(all_tx)
+    merchant_last = {}
+    for tx in all_tx:
+        nm  = (tx.get("merchant_name") or tx.get("name") or "").strip()
+        key = re.sub(r'[\s\d#*]+$', '', nm.lower()).strip()
+        ds  = str(tx.get("date", ""))
+        if key and ds and (key not in merchant_last or ds > merchant_last[key][0]):
+            merchant_last[key] = (ds, tx)
+
+    upcoming = []
+    for r in recurring:
+        nm  = r["merchant"]
+        key = re.sub(r'[\s\d#*]+$', '', nm.lower()).strip()
+        info = merchant_last.get(key)
+        if not info:
+            continue
+        try:
+            last_d    = datetime.strptime(info[0], "%Y-%m-%d").date()
+            next_due  = last_d + timedelta(days=30)
+            days_away = (next_due - today_date).days
+            if -5 <= days_away <= 35:
+                upcoming.append({"merchant":   nm,
+                                 "amount":     r["avg_amount"],
+                                 "due_date":   next_due.strftime("%Y-%m-%d"),
+                                 "days_until": days_away,
+                                 "category":   r["category"],
+                                 "subscription": r["is_subscription"]})
+        except (ValueError, TypeError):
+            continue
+
+    upcoming.sort(key=lambda x: x["days_until"])
+    return _ok(today_date=today_str,
+               today_spent=round(today_spent, 2),
+               week_spent=round(week_spent, 2),
+               recent_transactions=recent_simple,
+               upcoming_bills=upcoming[:8])
 
 
 @app.route("/health")
@@ -1200,7 +1317,7 @@ def chat():
     if not stats:
         return _error(400, "No transaction data available")
     budgets = load_budgets(user_id)
-    reply   = groq_chat(message, stats, budgets)
+    reply   = groq_chat(message, stats, budgets, all_tx=all_tx)
     return _ok(reply=reply, message=message)
 
 

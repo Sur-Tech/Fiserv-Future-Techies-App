@@ -24,6 +24,7 @@
     { "src": "/history",            "dest": "/transactions.py" },
     { "src": "/simulate",           "dest": "/transactions.py" },
     { "src": "/reset",              "dest": "/transactions.py" },
+    { "src": "/today",              "dest": "/transactions.py" },
     { "src": "/health",             "dest": "/transactions.py" },
     { "src": "/(.*)",               "dest": "/$1" }
   ]
