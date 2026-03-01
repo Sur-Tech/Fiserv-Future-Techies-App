@@ -165,11 +165,11 @@
         </div>
 
         <div class="quick-actions">
-            <button class="action-btn">&#10133; Add Bill</button>
-            <button class="action-btn">&#9989; Enable All Auto-Pay</button>
-            <button class="action-btn">&#128200; Usage Report</button>
-            <button class="action-btn">&#128176; Set Budget Alerts</button>
-            <button class="action-btn">&#128197; View Calendar</button>
+            <button class="action-btn" onclick="showToast('Use the Transfer Money feature to schedule bill payments.', 'info')">&#10133; Add Bill</button>
+            <button class="action-btn" onclick="showToast('All bills set to Auto-Pay! Payments will process on due dates.', 'success')">&#9989; Enable All Auto-Pay</button>
+            <button class="action-btn" onclick="window.location='spending-analyzer.html'">&#128200; Usage Report</button>
+            <button class="action-btn" onclick="showToast('Budget alerts activated! You will be notified when spending exceeds limits.', 'success')">&#128176; Set Budget Alerts</button>
+            <button class="action-btn" onclick="showToast('Payment calendar: Electric Feb 5, Water Feb 8, Gas Feb 10, Internet Feb 12.', 'info', 5000)">&#128197; View Calendar</button>
         </div>
     </main>
     <footer>

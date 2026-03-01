@@ -35,7 +35,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(na
 logger = logging.getLogger("cashlens")
 
 GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
+GEMINI_MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 GEMINI_TIMEOUT    = int(os.getenv("GEMINI_TIMEOUT", "30"))
 
 gemini_client = None
@@ -655,8 +655,67 @@ Write a short alert that:
     return gemini_generate(prompt)
 
 
+def _rule_based_chat(message, stats, budgets):
+    """Smart data-driven fallback when Gemini is unavailable."""
+    msg = message.lower()
+    spent     = stats.get("total_spent", 0)
+    avg       = stats.get("avg_daily_spend", 0)
+    top_cat   = stats.get("top_category", "Other")
+    top_amt   = stats.get("top_category_amount", 0)
+    net       = stats.get("net_cash_flow", 0)
+    tx_count  = stats.get("transaction_count", 0)
+    cats      = stats.get("category_breakdown", {})
+
+    if any(w in msg for w in ["total", "spent", "spending", "month", "budget", "overview", "summary", "doing"]):
+        flow = "positive" if net >= 0 else "negative"
+        return (
+            f"Here's your spending summary for the last 30 days:\n\n"
+            f"💰 Total spent: ${spent:,.2f}\n"
+            f"📊 Daily average: ${avg:.2f}/day\n"
+            f"📈 Top category: {top_cat} (${top_amt:,.2f})\n"
+            f"🔢 Transactions: {tx_count}\n"
+            f"{'✅' if net >= 0 else '⚠️'} Net cash flow: ${net:,.2f} ({flow})\n\n"
+            + ("You're in good shape this period!" if net >= 0 else "You're spending more than income recorded — watch your expenses.")
+        )
+
+    if any(w in msg for w in ["categor", "breakdown", "where", "most", "top"]):
+        top5 = sorted(cats.items(), key=lambda x: x[1], reverse=True)[:5]
+        lines = "\n".join(f"  {i+1}. {c}: ${a:,.2f}" for i, (c, a) in enumerate(top5))
+        return f"Your top spending categories:\n\n{lines}\n\nYour biggest area is **{top_cat}** at ${top_amt:,.2f}."
+
+    if any(w in msg for w in ["save", "saving", "tip", "advice", "recommend", "cut", "reduce"]):
+        over = [f"{cat} (over by ${cats.get(cat,0) - info['limit']:.2f})"
+                for cat, info in budgets.items() if cats.get(cat, 0) > info["limit"]]
+        budget_note = f"\n4. You're over budget in: {', '.join(over)}." if over else ""
+        return (
+            f"Here are 3 tips based on your data:\n\n"
+            f"1. Your top spend is {top_cat} (${top_amt:,.2f}) — look for ways to reduce here first.\n"
+            f"2. You average ${avg:.2f}/day. Even cutting 10% saves ${avg * 0.1 * 30:.0f}/month.\n"
+            f"3. Check the Spending Analyzer for recurring subscriptions you may have forgotten about."
+            + budget_note
+        )
+
+    if any(w in msg for w in ["subscript", "recurring", "monthly", "auto", "repeat"]):
+        return "Check the **Recurring Transactions** section in the Spending Analyzer — it detects merchants that appear across multiple months, which are likely subscriptions."
+
+    if any(w in msg for w in ["daily", "average", "day"]):
+        return f"Your average daily spending over the last 30 days is **${avg:.2f}/day** (${avg * 7:.2f}/week, ${avg * 30:.2f}/month)."
+
+    if any(w in msg for w in ["transaction", "how many", "count"]):
+        return f"You have **{tx_count} transactions** in the last 30 days, averaging ${spent / max(tx_count, 1):.2f} per transaction."
+
+    # Generic fallback with real numbers
+    return (
+        f"Based on your last 30 days: you spent **${spent:,.2f}** across {tx_count} transactions, "
+        f"averaging **${avg:.2f}/day**. Your biggest category is **{top_cat}** at ${top_amt:,.2f}. "
+        f"Net cash flow: ${net:,.2f}. Ask me something specific like 'where am I spending the most?' or 'give me saving tips'."
+    )
+
+
 def gemini_chat(user_message, stats, budgets):
     safe_msg = guard_prompt_injection(sanitize_text(user_message, _MAX_CHAT_MESSAGE_LEN))
+    if not gemini_client:
+        return _rule_based_chat(safe_msg, stats, budgets)
     prompt = f"""You are Domus, a friendly personal financial advisor.
 Answer the user's question using their actual spending data below.
 Be conversational and specific. Under 200 words.
@@ -669,7 +728,10 @@ USER'S DATA:
 SPENDING BY CATEGORY:\n{_fmt_categories(stats)}
 THEIR BUDGETS:\n{_fmt_budgets(budgets)}
 USER'S QUESTION: {safe_msg}"""
-    return gemini_generate(prompt)
+    result = gemini_generate(prompt)
+    if "unavailable" in result.lower():
+        return _rule_based_chat(safe_msg, stats, budgets)
+    return result
 
 
 class PlaidFetchError(Exception):

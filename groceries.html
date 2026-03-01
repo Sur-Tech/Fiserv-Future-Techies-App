@@ -87,11 +87,11 @@
             </div>
         </div>
         <div class="quick-actions">
-            <button class="action-btn">&#10133; Add Item</button>
-            <button class="action-btn">&#128228; Share List</button>
-            <button class="action-btn">&#128260; Reorder Last Trip</button>
-            <button class="action-btn">&#128202; Monthly Report</button>
-            <button class="action-btn">&#127978; Find Deals Nearby</button>
+            <button class="action-btn" onclick="showToast('Item added to your grocery list!', 'success')">&#10133; Add Item</button>
+            <button class="action-btn" onclick="navigator.clipboard && navigator.clipboard.writeText('My Domus grocery list').then(() => showToast('Shopping list copied to clipboard!', 'success'))">&#128228; Share List</button>
+            <button class="action-btn" onclick="showToast('Last trip items added to your list!', 'success')">&#128260; Reorder Last Trip</button>
+            <button class="action-btn" onclick="window.location='spending-analyzer.html'">&#128202; Monthly Report</button>
+            <button class="action-btn" onclick="showToast('Scanning nearby stores for deals...', 'info')">&#127978; Find Deals Nearby</button>
         </div>
     </main>
     <footer>

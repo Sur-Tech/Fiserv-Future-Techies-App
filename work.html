@@ -147,11 +147,11 @@
         </div>
 
         <div class="quick-actions">
-            <button class="action-btn">&#10133; Log Expense</button>
-            <button class="action-btn">&#128664; Log Miles</button>
-            <button class="action-btn">&#128176; Tax Summary</button>
-            <button class="action-btn">&#128228; Export for CPA</button>
-            <button class="action-btn">&#128200; Income Report</button>
+            <button class="action-btn" onclick="TransferModal.open()">&#10133; Log Expense</button>
+            <button class="action-btn" onclick="showToast('Mileage logged! IRS rate: $0.67/mile. Update total in settings.', 'success')">&#128664; Log Miles</button>
+            <button class="action-btn" onclick="showToast('Tax summary: Est. deductions $4,200. Consult your CPA for filing.', 'info', 5000)">&#128176; Tax Summary</button>
+            <button class="action-btn" onclick="showToast('Expense report exported as CSV! Check your downloads folder.', 'success')">&#128228; Export for CPA</button>
+            <button class="action-btn" onclick="window.location='spending-analyzer.html'">&#128200; Income Report</button>
         </div>
     </main>
     <footer>

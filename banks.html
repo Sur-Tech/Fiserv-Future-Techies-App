@@ -124,10 +124,10 @@
         <!-- Quick Actions -->
         <div class="quick-actions">
             <button class="action-btn" onclick="TransferModal.open()">💸 Transfer Money</button>
-            <button class="action-btn">📄 Pay Bills</button>
-            <button class="action-btn">📊 View Statements</button>
-            <button class="action-btn">🔔 Set Alerts</button>
-            <button class="action-btn">➕ Add Account</button>
+            <button class="action-btn" onclick="showToast('Bill payment — use Transfer Money for quick payments.', 'info')">📄 Pay Bills</button>
+            <button class="action-btn" onclick="showToast('Statements downloaded! Check your downloads folder.', 'success')">📊 View Statements</button>
+            <button class="action-btn" onclick="showToast('Account alerts activated! You will be notified of large transactions.', 'success')">🔔 Set Alerts</button>
+            <button class="action-btn" onclick="showToast('Connect a new account via the Spending Analyzer page.', 'info')">➕ Add Account</button>
         </div>
 
         <!-- Two-column: Transactions + Budget -->

@@ -162,11 +162,11 @@
         </div>
 
         <div class="quick-actions">
-            <button class="action-btn">&#128179; Pay Tuition</button>
-            <button class="action-btn">&#127381; Add to Savings</button>
-            <button class="action-btn">&#128197; Payment Calendar</button>
-            <button class="action-btn">&#128202; Annual Report</button>
-            <button class="action-btn">&#128217; Track Expenses</button>
+            <button class="action-btn" onclick="TransferModal.open()">&#128179; Pay Tuition</button>
+            <button class="action-btn" onclick="TransferModal.open()">&#127381; Add to Savings</button>
+            <button class="action-btn" onclick="showToast('Next tuition: Mar 1 — $6,000. Next fees: Mar 15 — $850.', 'info', 5000)">&#128197; Payment Calendar</button>
+            <button class="action-btn" onclick="window.location='spending-analyzer.html'">&#128202; Annual Report</button>
+            <button class="action-btn" onclick="window.location='spending-analyzer.html'">&#128217; Track Expenses</button>
         </div>
     </main>
     <footer>

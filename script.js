@@ -139,7 +139,9 @@ const Tracker = {
 // =============================================
 
 const ChatWidget = {
-    API:         'http://localhost:5000',
+    API: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:5000'
+        : '',
     HISTORY_KEY: 'chat_history',
     MAX_HISTORY: 50,
     isOpen:      false,
@@ -257,14 +259,13 @@ const ChatWidget = {
 
             this.setTyping(false);
 
-            if (res.ok) {
-                const data = await res.json();
-                this.addMessage('ai', data.reply || 'I received an empty response. Please try again.');
+            const json = await res.json().catch(() => ({}));
+            if (res.ok && json.success) {
+                this.addMessage('ai', (json.data && json.data.reply) || 'I received an empty response. Please try again.');
             } else if (res.status === 400) {
-                const data = await res.json().catch(() => ({}));
-                this.addMessage('ai', data.error || 'Your message could not be processed. Try rephrasing it.');
+                this.addMessage('ai', json.error || 'Your message could not be processed. Try rephrasing it.');
             } else {
-                this.addMessage('ai', `Server error (${res.status}). The backend may need attention.`);
+                this.addMessage('ai', json.error || `Server error (${res.status}). The backend may need attention.`);
             }
         } catch {
             this.setTyping(false);
@@ -483,6 +484,30 @@ const VoiceReminder = {
         this.updateUI();
     }
 };
+
+
+// =============================================
+// TOAST NOTIFICATIONS
+// =============================================
+
+function showToast(msg, type = 'info', duration = 3200) {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    const icons = { success: '✅', info: 'ℹ️', error: '❌', warning: '⚠️' };
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `<span class="toast-icon">${icons[type] || '💬'}</span><span class="toast-text">${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'toastOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
 
 
 // =============================================
