@@ -1673,6 +1673,171 @@ footer strong {
     gap: 7px;
 }
 
+/* =============================================
+   DARK MODE
+   ============================================= */
+
+/* Override CSS variables in dark mode */
+[data-theme="dark"] {
+    --gray-50:   #0D1117;
+    --gray-100:  #161B22;
+    --gray-200:  #21262D;
+    --gray-400:  #6E7681;
+    --gray-500:  #8B949E;
+    --gray-700:  #C9D1D9;
+    --text-dark: #E6EDF3;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.4);
+    --shadow-md: 0 8px 32px rgba(0,0,0,0.55);
+    --shadow-lg: 0 20px 60px rgba(0,0,0,0.65);
+}
+
+/* Cards & surfaces that use hardcoded white */
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .content-card,
+[data-theme="dark"] .bill-card,
+[data-theme="dark"] .modal-card {
+    background: #1E293B;
+}
+
+/* Action buttons */
+[data-theme="dark"] .action-btn {
+    background: #1E293B;
+    border-color: #2D3748;
+    color: #C9D1D9;
+}
+[data-theme="dark"] .action-btn:hover {
+    background: #263549;
+    border-color: #94A3B8;
+    color: #E6EDF3;
+}
+
+/* Hero title gradients — swap navy gradient to white */
+[data-theme="dark"] .hero-main-title,
+[data-theme="dark"] .sub-hero-title {
+    background: linear-gradient(135deg, #E2E8F0 0%, #94A3B8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Section divider titles */
+[data-theme="dark"] .section-title {
+    color: #94A3B8;
+    border-bottom-color: rgba(148, 163, 184, 0.18);
+}
+
+/* Introduction highlight box */
+[data-theme="dark"] #introduction {
+    background: rgba(245, 128, 37, 0.05);
+    border-color: rgba(245, 128, 37, 0.15);
+    color: var(--text-dark);
+}
+
+/* Personalized greeting bar */
+[data-theme="dark"] .personalized-greeting {
+    background: linear-gradient(135deg, rgba(245,128,37,0.06) 0%, rgba(245,128,37,0.02) 100%);
+    border-color: rgba(245, 128, 37, 0.15);
+    color: #C9D1D9;
+}
+
+/* Chat panel */
+[data-theme="dark"] .chat-panel {
+    background: #1A2433;
+}
+[data-theme="dark"] .chat-messages {
+    background: #111827;
+}
+[data-theme="dark"] .chat-bubble.ai .chat-text {
+    background: #1E293B;
+    color: #E6EDF3;
+    border-color: #2D3748;
+}
+[data-theme="dark"] .chat-avatar {
+    background: rgba(255,255,255,0.06) !important;
+}
+[data-theme="dark"] .chat-typing-bubble {
+    background: #1E293B;
+}
+[data-theme="dark"] .chat-suggestions {
+    border-top-color: #21262D;
+    background: #1A2433;
+}
+[data-theme="dark"] .chat-chip {
+    background: #21262D;
+    border-color: #2D3748;
+    color: #C9D1D9;
+}
+[data-theme="dark"] .chat-chip:hover {
+    background: rgba(245, 128, 37, 0.1);
+    border-color: rgba(245, 128, 37, 0.3);
+    color: var(--orange);
+}
+[data-theme="dark"] .chat-input-row {
+    border-top-color: #21262D;
+    background: #1A2433;
+}
+[data-theme="dark"] .chat-input {
+    background: #0D1117;
+    color: #E6EDF3;
+    border-color: #21262D;
+}
+[data-theme="dark"] .chat-input:focus {
+    background: #161B22;
+}
+[data-theme="dark"] .chat-input::placeholder {
+    color: #6E7681;
+}
+
+/* Modal form inputs */
+[data-theme="dark"] .modal-input,
+[data-theme="dark"] .modal-select {
+    background: #111827;
+    color: #E6EDF3;
+    border-color: #21262D;
+}
+[data-theme="dark"] .modal-input:focus,
+[data-theme="dark"] .modal-select:focus {
+    background: #161B22;
+}
+[data-theme="dark"] .modal-security-note {
+    background: #111827;
+    border-color: #21262D;
+}
+
+/* Badge gray variant */
+[data-theme="dark"] .badge-gray {
+    background: #21262D;
+    color: #8B949E;
+}
+
+/* Toggle slider dot */
+[data-theme="dark"] .toggle-slider::before {
+    background: #0D1117;
+}
+
+/* =============================================
+   THEME TOGGLE BUTTON (in header)
+   ============================================= */
+
+.theme-toggle-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
 .modal-submit {
     background: linear-gradient(135deg, var(--orange), var(--orange-light));
     color: white;

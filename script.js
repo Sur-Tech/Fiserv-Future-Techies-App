@@ -624,8 +624,43 @@ function injectChatWidget() {
     document.body.appendChild(wrap);
 }
 
+// =============================================
+// THEME TOGGLE (dark / light mode)
+// =============================================
+
+const ThemeToggle = {
+    KEY: 'domus_theme',
+
+    init() {
+        const saved = localStorage.getItem(this.KEY) || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        this._updateBtn(saved);
+    },
+
+    toggle() {
+        const current = document.documentElement.getAttribute('data-theme') || 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem(this.KEY, next);
+        this._updateBtn(next);
+    },
+
+    _updateBtn(theme) {
+        const btn = document.getElementById('theme-btn');
+        if (!btn) return;
+        if (theme === 'dark') {
+            btn.textContent = '☀️';
+            btn.title = 'Switch to light mode';
+        } else {
+            btn.textContent = '🌙';
+            btn.title = 'Switch to dark mode';
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     injectChatWidget();
+    ThemeToggle.init();
     Tracker.init();
     ChatWidget.init();
     VoiceReminder.init();
