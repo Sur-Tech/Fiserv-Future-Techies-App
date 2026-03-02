@@ -184,6 +184,23 @@ const ChatWidget = {
             .replace(/\n/g, '<br>');
     },
 
+    // Render AI text: safe HTML escape + markdown formatting
+    renderText(str) {
+        let s = String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        // Bold and italic
+        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+        // Inline code
+        s = s.replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:4px;font-size:12px;font-family:monospace">$1</code>');
+        // Newlines
+        s = s.replace(/\n/g, '<br>');
+        return s;
+    },
+
     addMessage(role, text) {
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         this.history.push({ role, text, time });
@@ -198,22 +215,31 @@ const ChatWidget = {
         if (!container) return;
 
         if (!this.history.length) {
+            const hour = new Date().getHours();
+            const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
             container.innerHTML = `
                 <div class="chat-bubble ai">
                     <div class="chat-avatar">🤖</div>
                     <div class="chat-content">
-                        <div class="chat-text">Hi! I'm <strong>Domus</strong>, your personal finance assistant.<br><br>
-                        Ask me anything about budgeting, spending habits, or saving goals. Use the quick prompts below to get started!</div>
+                        <div class="chat-text">${greet}! I'm <strong>Domus</strong> 👋<br><br>
+                        I know your spending inside out — your top categories, recent transactions, upcoming bills, all of it.<br><br>
+                        What's on your mind? Ask me anything or tap a suggestion below.</div>
                     </div>
                 </div>`;
         } else {
-            container.innerHTML = this.history.map(m => {
-                const cls    = m.role === 'user' ? 'user' : 'ai';
-                const avatar = m.role === 'user' ? '👤' : '🤖';
+            container.innerHTML = this.history.map((m, i) => {
+                const isUser = m.role === 'user';
+                const cls    = isUser ? 'user' : 'ai';
+                const avatar = isUser ? '👤' : '🤖';
+                const body   = isUser ? this.escHtml(m.text) : this.renderText(m.text);
+                // Show follow-up chips only on the last AI message
+                const followups = (!isUser && i === this.history.length - 1)
+                    ? this._followupChips(m.text) : '';
                 return `<div class="chat-bubble ${cls}">
                     <div class="chat-avatar">${avatar}</div>
                     <div class="chat-content">
-                        <div class="chat-text">${this.escHtml(m.text)}</div>
+                        <div class="chat-text">${body}</div>
+                        ${followups}
                         <div class="chat-time">${m.time || ''}</div>
                     </div>
                 </div>`;
@@ -221,6 +247,41 @@ const ChatWidget = {
         }
 
         this.scrollToBottom();
+    },
+
+    // Return HTML for 2 contextual follow-up chips based on AI reply content
+    _followupChips(reply) {
+        const r = reply.toLowerCase();
+        const pairs = [];
+
+        if (/budget|over.budget|limit/.test(r))
+            pairs.push(['📊 Set a budget', 'How do I set a budget for food?'],
+                       ['📉 Cut back tips', 'What\'s the easiest way to reduce my spending?']);
+        else if (/sav|tip|advice|reduc/.test(r))
+            pairs.push(['💰 More tips', 'Give me 3 more ways to save'],
+                       ['🎯 Set a goal', 'How much should I save each month?']);
+        else if (/subscri|recurring|netflix|spotify/.test(r))
+            pairs.push(['🔍 See all', 'List all my recurring charges'],
+                       ['✂️ Cancel one', 'Which subscription should I cancel first?']);
+        else if (/categor|food|dining|transport|shop/.test(r))
+            pairs.push(['📅 Daily average', 'What\'s my daily spending average?'],
+                       ['🔝 Top merchants', 'Where do I spend the most?']);
+        else if (/income|cash flow|earn|salary/.test(r))
+            pairs.push(['💸 Spending vs income', 'Am I spending too much relative to my income?'],
+                       ['📆 Monthly breakdown', 'Give me a monthly summary']);
+        else
+            pairs.push(['💡 Savings tips', 'Give me personalized savings tips'],
+                       ['📊 Full overview', 'Give me a full financial overview']);
+
+        const [chip1, chip2] = pairs[0];
+        return `<div class="chat-followup-chips">
+            <button class="chat-followup-chip" onclick="ChatWidget.quickSend('${chip1.replace(/'/g,"\\'")}')">
+                ${this.escHtml(chip1)}
+            </button>
+            <button class="chat-followup-chip" onclick="ChatWidget.quickSend('${chip2.replace(/'/g,"\\'")}')">
+                ${this.escHtml(chip2)}
+            </button>
+        </div>`;
     },
 
     scrollToBottom() {
@@ -252,8 +313,16 @@ const ChatWidget = {
         this.setTyping(true);
 
         try {
-            const ctx     = Tracker.getContext();
-            const payload = { message: ctx ? `${msg}\n\n${ctx}` : msg };
+            const ctx = Tracker.getContext();
+            const fullMsg = ctx ? `${msg}\n\n${ctx}` : msg;
+
+            // Pass last 8 turns as history so Groq can reference prior context
+            const history = this.history.slice(-8).map(m => ({
+                role:    m.role === 'user' ? 'user' : 'assistant',
+                content: m.text
+            }));
+
+            const payload = { message: fullMsg, history };
 
             const res = await fetch(`${this.API}/chat`, {
                 method:  'POST',
@@ -611,9 +680,12 @@ function injectChatWidget() {
                 <div class="chat-typing-label">Domus is thinking…</div>
             </div>
             <div class="chat-suggestions" id="chat-suggestions">
-                <button class="chat-chip" onclick="ChatWidget.quickSend('How am I doing with my budget?')">📊 Budget</button>
-                <button class="chat-chip" onclick="ChatWidget.quickSend('Where am I spending the most?')">💸 Top spending</button>
-                <button class="chat-chip" onclick="ChatWidget.quickSend('Give me savings tips')">💡 Tips</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('How am I doing financially this month?')">📊 Am I on track?</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('Where am I spending the most money?')">💸 Top spending</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('What are my recurring subscriptions?')">🔄 Subscriptions</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('Give me personalized savings tips')">💡 Save more</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('Am I over budget in any category?')">⚠️ Budget check</button>
+                <button class="chat-chip" onclick="ChatWidget.quickSend('What did I spend on food this month?')">🍔 Food spend</button>
             </div>
             <div class="chat-input-row">
                 <input id="chat-input" class="chat-input" type="text" placeholder="Ask about your finances…" maxlength="500"

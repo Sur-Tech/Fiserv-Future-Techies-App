@@ -877,14 +877,14 @@ def _rule_based_chat(message, stats, budgets):  # noqa: C901
     )
 
 
-def groq_chat(user_message, stats, budgets, all_tx=None):
+def groq_chat(user_message, stats, budgets, all_tx=None, history=None):
     safe_msg = guard_prompt_injection(sanitize_text(user_message, _MAX_CHAT_MESSAGE_LEN))
     if not groq_client:
         return _rule_based_chat(safe_msg, stats, budgets)
 
-    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_str = datetime.now(timezone.utc).strftime("%B %d, %Y")
 
-    # Recent 10 transactions
+    # Build transaction context
     recent_ctx = ""
     recurring_ctx = ""
     if all_tx:
@@ -906,39 +906,71 @@ def groq_chat(user_message, stats, budgets, all_tx=None):
             ]
             recurring_ctx = "RECURRING / SUBSCRIPTIONS:\n" + "\n".join(rec_lines)
 
-    prompt = f"""You are Domus, a friendly personal AI financial advisor.
-Answer the user's question using ONLY their real spending data below. Be conversational, specific, and concise (under 200 words).
-Today's date: {today_str}
+    net = stats['net_cash_flow']
+    system_prompt = f"""You are Domus — a sharp, witty, and genuinely helpful personal finance AI. Think of yourself as a brilliant friend who happens to be great with money.
 
-── SPENDING SUMMARY (last 30 days) ──
-- Total spent:       ${stats['total_spent']:.2f}
-- Income recorded:   ${stats.get('total_income', 0):.2f}
-- Net cash flow:     ${stats['net_cash_flow']:.2f}
-- Daily average:     ${stats['avg_daily_spend']:.2f}/day
-- Avg per purchase:  ${stats.get('avg_transaction', 0):.2f}
-- Transactions:      {stats['transaction_count']}
-- Top category:      {stats.get('top_category','N/A')} (${stats.get('top_category_amount',0):.2f})
-- Biggest spend day: {stats.get('biggest_expense_day','N/A')}
+Your personality:
+- Warm, direct, and conversational. Not corporate, not robotic, not preachy.
+- Always reference THEIR specific numbers and merchant names — never give generic advice.
+- Use emoji sparingly but effectively (✅ ⚠️ 💰 📊 💡) for scannability.
+- Keep replies concise — 150–250 words max. For simple questions, be brief and punchy.
+- End with a natural follow-up question or nudge when it makes sense (not every time).
+- If they're killing it financially, celebrate it! If there's a real problem, be honest but supportive.
+- Handle casual chat warmly — but gently steer back to their finances after a line or two.
+- Remember the conversation — reference prior turns naturally when relevant.
+- Format: use **bold** for key numbers/categories, and bullet points (•) for lists. No code blocks.
 
-── BY CATEGORY ──
+Today: {today_str}
+
+━━ THEIR FINANCIAL DATA (last 30 days) ━━
+Total spent:       ${stats['total_spent']:.2f}
+Income recorded:   ${stats.get('total_income', 0):.2f}
+Net cash flow:     ${net:.2f} ({'saving money ✅' if net >= 0 else 'spending more than income ⚠️'})
+Daily average:     ${stats['avg_daily_spend']:.2f}/day
+Avg per purchase:  ${stats.get('avg_transaction', 0):.2f}
+Transactions:      {stats['transaction_count']}
+Top category:      {stats.get('top_category','N/A')} (${stats.get('top_category_amount',0):.2f})
+Biggest spend day: {stats.get('biggest_expense_day','N/A')}
+
+BY CATEGORY:
 {_fmt_categories(stats)}
 
-── TOP MERCHANTS ──
+TOP MERCHANTS:
 {_fmt_merchants(stats)}
 
-── BUDGETS ──
+BUDGETS:
 {_fmt_budgets(budgets)}
 
 {recent_ctx}
 
-{recurring_ctx}
+{recurring_ctx}"""
 
-USER'S QUESTION: {safe_msg}"""
+    # Build multi-turn conversation
+    messages = [{"role": "system", "content": system_prompt}]
 
-    result = groq_generate(prompt)
-    if "unavailable" in result.lower():
+    if history:
+        for h in history[-8:]:
+            role    = h.get("role", "user")
+            content = str(h.get("content", "")).strip()
+            if role in ("user", "assistant") and content:
+                messages.append({"role": role, "content": content[:600]})
+
+    messages.append({"role": "user", "content": safe_msg})
+
+    try:
+        resp = groq_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=messages,
+            max_tokens=500,
+            temperature=0.82,
+        )
+        result = (resp.choices[0].message.content or "").strip()
+        if not result:
+            return _rule_based_chat(safe_msg, stats, budgets)
+        return result
+    except Exception as e:
+        logger.error("Groq error: %s", e)
         return _rule_based_chat(safe_msg, stats, budgets)
-    return result
 
 
 class PlaidFetchError(Exception):
@@ -1310,6 +1342,16 @@ def chat():
     message = sanitize_text(message, _MAX_CHAT_MESSAGE_LEN)
     if not message:
         return _error(400, "Message cannot be empty after sanitization")
+    # Conversation history from frontend (last N turns for multi-turn context)
+    raw_history = body.get("history", [])
+    history = []
+    if isinstance(raw_history, list):
+        for h in raw_history[:10]:
+            if isinstance(h, dict) and h.get("role") in ("user", "assistant"):
+                content = sanitize_text(str(h.get("content", "")), 600)
+                if content:
+                    history.append({"role": h["role"], "content": content})
+
     access_token, _ = load_token(user_id)
     all_tx, err_resp = _resolve_transactions(user_id, access_token, 30)
     if err_resp: return err_resp
@@ -1317,7 +1359,7 @@ def chat():
     if not stats:
         return _error(400, "No transaction data available")
     budgets = load_budgets(user_id)
-    reply   = groq_chat(message, stats, budgets, all_tx=all_tx)
+    reply   = groq_chat(message, stats, budgets, all_tx=all_tx, history=history)
     return _ok(reply=reply, message=message)
 
 
