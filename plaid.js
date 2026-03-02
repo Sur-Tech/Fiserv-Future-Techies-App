@@ -369,6 +369,19 @@ async function loadAnomalies(days) {
 
 // ─── AI Chat ──────────────────────────────────────────────────────────────────
 
+// In-page chat history for multi-turn context (spending analyzer inline chat)
+const _saHistory = [];
+
+function _renderMd(text) {
+  let s = String(text)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
+  s = s.replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.07);padding:1px 5px;border-radius:4px;font-size:12px;font-family:monospace">$1</code>');
+  s = s.replace(/\n/g, "<br>");
+  return s;
+}
+
 async function sendChat() {
   const input  = $("chat-input");
   const output = $("chat-output");
@@ -390,14 +403,21 @@ async function sendChat() {
   input.value = "";
   output.scrollTop = output.scrollHeight;
 
+  // Build history for multi-turn context (last 8 turns)
+  const history = _saHistory.slice(-8).map(h => ({ role: h.role, content: h.content }));
+
   try {
     const data = await apiFetch("/chat", {
       method: "POST",
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, history }),
     });
     $("chat-thinking")?.remove();
+    const reply = data.reply || "";
+    // Store in history
+    _saHistory.push({ role: "user", content: message });
+    _saHistory.push({ role: "assistant", content: reply });
     output.insertAdjacentHTML("beforeend", `
-      <div class="chat-msg-ai">${escHtml(data.reply)}</div>`);
+      <div class="chat-msg-ai">${_renderMd(reply)}</div>`);
   } catch (err) {
     $("chat-thinking")?.remove();
     output.insertAdjacentHTML("beforeend", `

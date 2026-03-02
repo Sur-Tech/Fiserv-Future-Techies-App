@@ -666,8 +666,8 @@ Write a short alert that:
 
 
 def _rule_based_chat(message, stats, budgets):  # noqa: C901
-    """Smart conversational AI using real transaction data."""
-    msg       = message.lower()
+    """Conversational + data-smart fallback when Groq is unavailable."""
+    msg       = message.lower().strip()
     spent     = stats.get("total_spent", 0)
     income    = stats.get("total_income", 0)
     avg       = stats.get("avg_daily_spend", 0)
@@ -680,200 +680,295 @@ def _rule_based_chat(message, stats, budgets):  # noqa: C901
     merchants = stats.get("top_merchants", [])
     big_day   = stats.get("biggest_expense_day", None)
 
+    # ── Who is Domus / identity ───────────────────────────────────────────
+    if any(w in msg for w in ["who are you", "what are you", "what is domus", "about you", "your name"]):
+        return (
+            f"I'm **Domus** — your personal AI finance assistant. 🤖\n\n"
+            f"I have full access to your last 30 days of spending:\n"
+            f"• **{tx_count} transactions** totalling **${spent:,.2f}**\n"
+            f"• Your top category is **{top_cat}**\n"
+            f"• I know your merchants, budgets, and recurring charges\n\n"
+            f"Ask me anything — specific numbers, not vague advice. What would you like to know?"
+        )
+
+    # ── What can you do / capabilities ───────────────────────────────────
+    if any(w in msg for w in ["what can you do", "what do you do", "how can you help", "capabilities", "features", "help me", "what can i ask"]):
+        return (
+            f"Here's what I know and can help with:\n\n"
+            f"📊 **Spending breakdown** — categories, merchants, daily averages\n"
+            f"💰 **Cash flow** — income vs spending, are you saving?\n"
+            f"🎯 **Budget tracking** — which limits you're hitting or missing\n"
+            f"🔄 **Subscriptions** — recurring charges you might have forgotten\n"
+            f"⚠️ **Anomalies** — transactions that look unusually large\n"
+            f"💡 **Savings tips** — specific to YOUR data, not generic advice\n\n"
+            f"Right now I'm looking at **{tx_count} transactions** (last 30 days). What do you want to dig into?"
+        )
+
     # ── Greetings ─────────────────────────────────────────────────────────
-    if any(w in msg for w in ["hello", "hi ", "hey", "howdy", "good morning", "good afternoon"]):
+    if any(w in msg for w in ["hello", "hi", "hey", "howdy", "good morning", "good afternoon", "good evening", "sup", "yo"]):
+        health = "✅ positive" if net >= 0 else "⚠️ negative"
         return (
-            f"Hey there! I'm Domus, your personal financial advisor. 👋\n\n"
-            f"Here's a quick snapshot of your last 30 days:\n"
-            f"• Spent: **${spent:,.2f}** across {tx_count} transactions\n"
+            f"Hey! 👋 I'm Domus, your finance assistant.\n\n"
+            f"Quick snapshot of your last 30 days:\n"
+            f"• Spent **${spent:,.2f}** across {tx_count} transactions\n"
             f"• Daily average: **${avg:.2f}/day**\n"
-            f"• Cash flow: **{'✅ positive' if net >= 0 else '⚠️ negative'}** (${net:,.2f})\n\n"
-            f"Ask me anything — try 'where am I spending the most?' or 'give me savings tips'!"
+            f"• Cash flow: **{health}** (${net:,.2f})\n\n"
+            f"What would you like to know?"
         )
 
-    # ── Jokes / off-topic ─────────────────────────────────────────────────
-    if any(w in msg for w in ["joke", "funny", "laugh", "humor"]):
+    # ── How are you ───────────────────────────────────────────────────────
+    if any(w in msg for w in ["how are you", "how r you", "how's it going", "hows it", "you good", "you ok", "how do you do"]):
+        status = "looking healthy" if net >= 0 else "a bit concerning"
         return (
-            f"Ha! Here's a finance joke: Why did the dollar bill break up with the coin? "
-            f"Because it had too many \"cents\" of humor! 😄\n\n"
-            f"On a serious note, your spending this month was **${spent:,.2f}** — "
-            f"not a joke, but hopefully not scary either! Want a real financial tip instead?"
+            f"Doing great, always watching the numbers! 😄\n\n"
+            f"Your finances are {status} right now — net cash flow this month is **${net:,.2f}**. "
+            f"{'You\'re saving money. 🎉' if net >= 0 else 'You\'re spending more than you\'re earning. ⚠️'}\n\n"
+            f"Anything specific you want to check on?"
         )
 
-    # ── Summary / overview / how am I doing ───────────────────────────────
-    if any(w in msg for w in ["summary", "overview", "how am i", "doing", "overall", "report"]):
+    # ── Acknowledgements / short positive responses ───────────────────────
+    if any(w in msg for w in ["thanks", "thank you", "thx", "ty", "cheers", "awesome", "great", "perfect", "got it", "ok cool", "nice", "cool", "interesting", "good to know", "helpful"]):
+        topics = ["your top spending category", "your daily average", "savings tips", "your subscriptions", "your budget status"]
+        topic = random.choice(topics)
+        return (
+            f"Happy to help! 😊\n\n"
+            f"Want to explore more? Try asking about {topic} — or just type whatever's on your mind."
+        )
+
+    # ── Tell me more / continue ───────────────────────────────────────────
+    if any(w in msg for w in ["tell me more", "more details", "elaborate", "continue", "go on", "what else", "anything else"]):
         top3 = sorted(cats.items(), key=lambda x: x[1], reverse=True)[:3]
-        top3_str = ", ".join(f"{c} (${a:,.2f})" for c, a in top3)
-        health = "great" if net > 500 else ("okay" if net >= 0 else "tight")
+        lines = "\n".join(f"  {i+1}. **{c}** — ${a:,.2f}" for i, (c, a) in enumerate(top3))
+        m0 = merchants[0]["name"] if merchants else "N/A"
         return (
-            f"Here's your 30-day financial overview:\n\n"
+            f"Here's a deeper look at your last 30 days:\n\n"
+            f"**Top categories:**\n{lines}\n\n"
+            f"**Daily average:** ${avg:.2f}/day\n"
+            f"**Most visited merchant:** {m0}\n"
+            f"**Biggest spend day:** {big_day or 'N/A'}\n\n"
+            f"Want to go deeper on a specific category, your subscriptions, or budget status?"
+        )
+
+    # ── Jokes ─────────────────────────────────────────────────────────────
+    if any(w in msg for w in ["joke", "funny", "laugh", "humor", "make me laugh"]):
+        return (
+            f"Why did the dollar break up with the credit card? "
+            f"It said, \"You're always swiping right!\" 😄\n\n"
+            f"Speaking of swiping — you've made **{tx_count} transactions** this month totalling **${spent:,.2f}**. "
+            f"Want to see where it all went?"
+        )
+
+    # ── Summary / overview ────────────────────────────────────────────────
+    if any(w in msg for w in ["summary", "overview", "how am i doing", "overall", "report", "financial health", "status"]):
+        top3 = sorted(cats.items(), key=lambda x: x[1], reverse=True)[:3]
+        top3_str = " • ".join(f"{c} ${a:,.2f}" for c, a in top3)
+        health = "great" if net > 500 else ("solid" if net >= 0 else "tight")
+        return (
+            f"Your 30-day financial snapshot:\n\n"
             f"💰 **Total Spent:** ${spent:,.2f}\n"
             f"📥 **Income Recorded:** ${income:,.2f}\n"
             f"{'✅' if net >= 0 else '⚠️'} **Net Cash Flow:** ${net:,.2f}\n"
             f"📊 **Daily Average:** ${avg:.2f}/day\n"
             f"🔢 **Transactions:** {tx_count} (avg ${avg_tx:.2f} each)\n\n"
-            f"**Top Categories:** {top3_str}\n\n"
-            f"Overall your finances look **{health}** this period. "
-            + ("Keep it up! 🎉" if net >= 0 else "Consider reviewing your top spending categories to cut back.")
+            f"**Top spends:** {top3_str}\n\n"
+            f"Overall: finances look **{health}**. "
+            + ("You're in the green! 🎉" if net >= 0 else "Worth reviewing your top categories to cut back.")
         )
+
+    # ── Am I saving / spending too much ──────────────────────────────────
+    if any(w in msg for w in ["am i saving", "saving money", "saving enough", "too much", "overspending", "on track", "am i good"]):
+        if net >= 0:
+            return (
+                f"Yes! You're saving money this month. ✅\n\n"
+                f"You earned **${income:,.2f}** and spent **${spent:,.2f}**, "
+                f"leaving a **${net:,.2f} surplus**.\n\n"
+                f"Your daily average of **${avg:.2f}** is sustainable. Keep it up!"
+            )
+        else:
+            over = abs(net)
+            return (
+                f"Heads up — you're spending **${over:,.2f} more** than your recorded income this month. ⚠️\n\n"
+                f"Spent: **${spent:,.2f}** | Income: **${income:,.2f}**\n\n"
+                f"Your biggest category is **{top_cat}** at ${top_amt:,.2f}. "
+                f"That's a good place to start cutting back."
+            )
 
     # ── Total spent ───────────────────────────────────────────────────────
-    if any(w in msg for w in ["total", "spent", "how much", "spend this", "cost me"]):
+    if any(w in msg for w in ["total", "how much did i spend", "how much have i spent", "spend this month", "cost me"]):
         return (
-            f"Over the last 30 days you've spent **${spent:,.2f}** across **{tx_count} transactions**, "
-            f"averaging **${avg:.2f}/day** or **${avg_tx:.2f}** per purchase.\n\n"
-            f"Your biggest spending area is **{top_cat}** at ${top_amt:,.2f}."
-            + (f"\n\nYour biggest single-day spending was on **{big_day}**." if big_day else "")
+            f"Over the last 30 days you spent **${spent:,.2f}** across **{tx_count} transactions** — "
+            f"that's **${avg:.2f}/day** or **${avg_tx:.2f}** per purchase on average.\n\n"
+            f"Biggest area: **{top_cat}** at ${top_amt:,.2f}."
+            + (f"\n\nBiggest single day was **{big_day}**." if big_day else "")
         )
 
-    # ── Category breakdown ────────────────────────────────────────────────
-    if any(w in msg for w in ["categor", "breakdown", "where", "most", "top spend", "areas"]):
+    # ── Category breakdown / where spending goes ──────────────────────────
+    if any(w in msg for w in ["categor", "breakdown", "where am i spending", "where does my money", "where is my money", "most", "top spend", "areas"]):
         top5 = sorted(cats.items(), key=lambda x: x[1], reverse=True)[:5]
-        lines = "\n".join(f"  {i+1}. **{c}** — ${a:,.2f} ({a/spent*100:.0f}% of total)" for i, (c, a) in enumerate(top5) if spent > 0)
+        if spent > 0:
+            lines = "\n".join(f"  {i+1}. **{c}** — ${a:,.2f} ({a/spent*100:.0f}%)" for i, (c, a) in enumerate(top5))
+        else:
+            lines = "\n".join(f"  {i+1}. {c}: ${a:,.2f}" for i, (c, a) in enumerate(top5))
         return (
             f"Here's where your money went this month:\n\n{lines}\n\n"
-            f"**{top_cat}** is your biggest category, taking up "
-            f"**{top_amt/spent*100:.0f}%** of your total spending."
-            if spent > 0 else
-            f"Your top spending categories:\n\n" + "\n".join(f"  {i+1}. {c}: ${a:,.2f}" for i, (c, a) in enumerate(top5))
+            f"**{top_cat}** takes the biggest slice — ${top_amt:,.2f} "
+            + (f"({top_amt/spent*100:.0f}% of everything you spent)." if spent > 0 else ".")
         )
 
     # ── Specific category lookup ──────────────────────────────────────────
     for cat_name, cat_amt in cats.items():
-        if cat_name.lower() in msg or cat_name.lower().split()[0] in msg:
+        words = cat_name.lower().split()
+        if cat_name.lower() in msg or (words and words[0] in msg):
             pct = cat_amt / spent * 100 if spent > 0 else 0
             return (
-                f"You spent **${cat_amt:,.2f}** on **{cat_name}** this month, "
-                f"which is **{pct:.0f}%** of your total spending (${spent:,.2f}).\n\n"
-                f"That works out to about **${cat_amt/30:.2f}/day** for this category."
+                f"You spent **${cat_amt:,.2f}** on **{cat_name}** this month — "
+                f"that's **{pct:.0f}%** of your total (${spent:,.2f}).\n\n"
+                f"Works out to about **${cat_amt/30:.2f}/day** for this category."
             )
 
     # ── Merchants / stores ────────────────────────────────────────────────
-    if any(w in msg for w in ["merchant", "store", "shop", "vendor", "where do i", "places"]):
+    if any(w in msg for w in ["merchant", "store", "shop", "vendor", "where do i", "places", "who do i buy from"]):
         if merchants:
-            lines = "\n".join(f"  {i+1}. **{m['name']}** — {m['visits']} visits, ${m['total']:,.2f} total" for i, m in enumerate(merchants[:5]))
-            return f"Your most visited merchants this month:\n\n{lines}\n\nYou spend the most frequently at **{merchants[0]['name']}**."
+            lines = "\n".join(
+                f"  {i+1}. **{m['name']}** — {m['visits']} visits, ${m['total']:,.2f} total"
+                for i, m in enumerate(merchants[:5])
+            )
+            return (
+                f"Your most visited merchants this month:\n\n{lines}\n\n"
+                f"You visit **{merchants[0]['name']}** the most frequently."
+            )
         return "Merchant data isn't available yet — try syncing your transactions first."
 
     # ── Income ────────────────────────────────────────────────────────────
-    if any(w in msg for w in ["income", "earn", "salary", "paycheck", "deposit"]):
+    if any(w in msg for w in ["income", "earn", "salary", "paycheck", "deposit", "how much do i make"]):
         return (
             f"Income recorded in the last 30 days: **${income:,.2f}**.\n\n"
-            f"After your spending of ${spent:,.2f}, your **net cash flow is ${net:,.2f}**.\n\n"
-            + ("You're saving money — great work! 🎉" if net > 0 else
-               "Your spending currently exceeds your recorded income. Consider tracking all income sources.")
+            f"After spending ${spent:,.2f}, your **net cash flow is ${net:,.2f}**. "
+            + ("You're saving money — well done! 🎉" if net > 0
+               else "Your spending is exceeding your recorded income — worth reviewing.")
         )
 
     # ── Budget ────────────────────────────────────────────────────────────
-    if any(w in msg for w in ["budget", "limit", "over budget", "under budget"]):
+    if any(w in msg for w in ["budget", "limit", "over budget", "under budget", "am i over"]):
         if budgets:
             lines = []
             for cat, info in budgets.items():
                 actual = cats.get(cat, 0)
                 limit  = info.get("limit", 0)
-                status = "⚠️ over" if actual > limit else "✅ under"
-                lines.append(f"  • **{cat}**: ${actual:,.2f} / ${limit:,.2f} limit ({status})")
+                pct    = actual / limit * 100 if limit > 0 else 0
+                icon   = "🔴" if actual > limit else ("🟡" if pct > 80 else "🟢")
+                lines.append(f"  {icon} **{cat}**: ${actual:,.2f} / ${limit:,.2f} ({pct:.0f}%)")
             over_cats = [c for c, i in budgets.items() if cats.get(c, 0) > i["limit"]]
             return (
                 f"Budget status this month:\n\n" + "\n".join(lines) +
-                (f"\n\n⚠️ You're over budget in: {', '.join(over_cats)}." if over_cats else "\n\n✅ You're within all your budgets!")
+                (f"\n\n⚠️ Over budget in: {', '.join(over_cats)}." if over_cats else "\n\n✅ You're within all budgets!")
             )
-        return "No budgets set yet. You can set budgets in the Spending Analyzer under 'Budget Tracker'."
+        return "No budgets set yet. Head to the Spending Analyzer to set category budgets."
 
-    # ── Savings tips / advice ─────────────────────────────────────────────
-    if any(w in msg for w in ["save", "saving", "tip", "advice", "recommend", "cut", "reduce", "improve", "help me"]):
+    # ── Savings tips ──────────────────────────────────────────────────────
+    if any(w in msg for w in ["save", "saving tip", "advice", "recommend", "cut back", "reduce spending", "spend less", "improve"]):
         over = [f"**{cat}** (${cats.get(cat,0) - info['limit']:,.2f} over)" for cat, info in budgets.items() if cats.get(cat, 0) > info["limit"]]
+        target_daily = avg * 0.85
+        monthly_save = avg * 0.15 * 30
         tips = [
-            f"1. **Attack your top category first** — {top_cat} at ${top_amt:,.2f} is 30%+ of budget. Look for one recurring charge to cancel.",
-            f"2. **Daily spend target** — You average ${avg:.2f}/day. Setting a daily budget of ${avg*0.85:.2f} would save you **${avg*0.15*30:.0f}/month**.",
-            f"3. **Automate savings** — Transfer a fixed amount on payday before you can spend it. Even $50/paycheck adds up.",
-            f"4. **Review subscriptions** — Check the Recurring Transactions tab in the Spending Analyzer for forgotten subscriptions.",
+            f"1. **Target your biggest category** — {top_cat} at ${top_amt:,.2f}. Find one charge to cut.",
+            f"2. **Set a daily limit** — You average ${avg:.2f}/day. Dropping to ${target_daily:.2f} saves **${monthly_save:.0f}/month**.",
+            f"3. **Automate savings** — Move money to savings on payday before you can spend it.",
+            f"4. **Audit subscriptions** — Check recurring charges in the Spending Analyzer for forgotten ones.",
         ]
         if over:
-            tips.append(f"5. **Budget alert** — You're over limit on: {', '.join(over)}. Focus on these areas first.")
-        return "Here are personalized savings tips based on your data:\n\n" + "\n".join(tips)
+            tips.append(f"5. **Fix budget overruns** — You're over on: {', '.join(over)}.")
+        return "Personalized savings tips based on your data:\n\n" + "\n".join(tips)
 
     # ── Recurring / subscriptions ─────────────────────────────────────────
-    if any(w in msg for w in ["subscript", "recurring", "auto", "repeat", "netflix", "spotify", "monthly bill"]):
+    if any(w in msg for w in ["subscript", "recurring", "auto", "repeat", "netflix", "spotify", "monthly charge", "monthly bill"]):
         return (
-            "Great question! The **Recurring Transactions** section in the Spending Analyzer "
-            "automatically detects merchants that charge you consistently each month.\n\n"
-            "Common subscriptions to review: streaming services, gym memberships, software tools, "
-            "and insurance premiums. Even canceling one $15/month subscription saves **$180/year**."
+            f"The **Recurring Transactions** panel in the Spending Analyzer shows every merchant "
+            f"that charges you consistently — subscriptions, memberships, utilities.\n\n"
+            f"Canceling just one $15/month subscription saves **$180/year**. "
+            f"Even small recurring charges add up fast — worth an audit!"
         )
 
-    # ── Daily average ─────────────────────────────────────────────────────
-    if any(w in msg for w in ["daily", "average", "per day", "day"]):
+    # ── Daily / weekly averages ───────────────────────────────────────────
+    if any(w in msg for w in ["daily", "average", "per day", "weekly", "yearly projection"]):
         return (
-            f"Your average daily spending is **${avg:.2f}/day** over the last 30 days.\n\n"
-            f"📅 Weekly: ~${avg*7:,.2f}\n"
-            f"📆 Monthly: ~${avg*30:,.2f}\n"
-            f"📅 Yearly projection: ~${avg*365:,.2f}\n\n"
-            f"Your biggest single-day was **{big_day}**." if big_day else
-            f"Your average daily spending is **${avg:.2f}/day**."
+            f"Your spending averages:\n\n"
+            f"📅 **Per day:** ${avg:.2f}\n"
+            f"📆 **Per week:** ~${avg*7:,.2f}\n"
+            f"🗓️ **Per month:** ~${avg*30:,.2f}\n"
+            f"📊 **Yearly projection:** ~${avg*365:,.2f}\n\n"
+            + (f"Your biggest single day was **{big_day}**." if big_day else "")
         )
 
     # ── Transaction count ─────────────────────────────────────────────────
-    if any(w in msg for w in ["transaction", "how many", "count", "number of"]):
+    if any(w in msg for w in ["how many transaction", "transaction count", "number of purchase", "how often"]):
+        per_day = round(tx_count / 30, 1)
         return (
-            f"You have **{tx_count} transactions** in the last 30 days — that's about "
-            f"**{tx_count//30 or 1}–{max(tx_count//20, 2)} per day**.\n\n"
+            f"You've made **{tx_count} transactions** in the last 30 days — about **{per_day}/day**.\n\n"
             f"Average spend per transaction: **${avg_tx:.2f}**.\n"
-            f"Total spent: **${spent:,.2f}**."
+            f"Total: **${spent:,.2f}**."
         )
 
-    # ── Net cash flow / balance ───────────────────────────────────────────
-    if any(w in msg for w in ["cash flow", "net", "balance", "profit", "surplus", "deficit"]):
+    # ── Net cash flow ─────────────────────────────────────────────────────
+    if any(w in msg for w in ["cash flow", "net cash", "surplus", "deficit", "profit this month"]):
         return (
-            f"Your 30-day net cash flow is **${net:,.2f}**.\n\n"
-            f"• Income recorded: ${income:,.2f}\n"
-            f"• Total spent: ${spent:,.2f}\n"
+            f"Your 30-day net cash flow: **${net:,.2f}**\n\n"
+            f"• Income: ${income:,.2f}\n"
+            f"• Spent: ${spent:,.2f}\n"
             f"• **Net: ${net:,.2f}** ({'surplus ✅' if net >= 0 else 'deficit ⚠️'})\n\n"
-            + ("You're spending less than you earn — excellent financial health!" if net > 0
-               else "Your spending exceeds your recorded income. Check if all income sources are linked.")
+            + ("Spending less than you earn — solid financial health! 💪" if net > 0
+               else "Spending exceeds income. Worth reviewing your top categories.")
         )
 
-    # ── Anomalies / unusual / big ─────────────────────────────────────────
-    if any(w in msg for w in ["unusual", "anomal", "big purchase", "large", "weird", "strange", "spike"]):
+    # ── Anomalies / unusual spending ──────────────────────────────────────
+    if any(w in msg for w in ["unusual", "anomal", "big purchase", "large purchase", "weird", "strange", "spike", "flagged"]):
         return (
-            f"For unusual spending patterns, check the **Spending Alerts** section in the Spending Analyzer — "
-            f"it flags transactions that are significantly above your average for each category.\n\n"
+            f"The **Spending Anomalies** section in the Spending Analyzer flags any transaction "
+            f"that's 2× or more above your usual amount for that category.\n\n"
             f"Your average transaction is **${avg_tx:.2f}**. Anything above "
-            f"**${avg_tx*2:.0f}** is worth reviewing."
+            f"**${avg_tx*2:.0f}** in a single purchase is worth a second look."
         )
 
-    # ── Comparison / trend ────────────────────────────────────────────────
-    if any(w in msg for w in ["trend", "compar", "last month", "previous", "improve", "better", "worse"]):
+    # ── Trends / comparison ───────────────────────────────────────────────
+    if any(w in msg for w in ["trend", "compar", "last month", "previous month", "getting better", "getting worse"]):
         return (
-            f"This month you spent **${spent:,.2f}** across {tx_count} transactions.\n\n"
-            f"To compare with previous months, check the **Monthly Chart** in the Spending Analyzer — "
-            f"it shows your spending trend over time so you can see if you're improving.\n\n"
-            f"💡 Tip: A good target is to reduce monthly spending by 5–10% each month."
+            f"This month: **${spent:,.2f}** across {tx_count} transactions.\n\n"
+            f"For month-to-month trends, check the **Monthly Chart** in the Spending Analyzer — "
+            f"it plots your spending over time so you can see if you're improving.\n\n"
+            f"A good benchmark: try to reduce spending by **5–10%** each month."
         )
 
     # ── Biggest expense day ───────────────────────────────────────────────
-    if any(w in msg for w in ["biggest", "most expensive", "highest", "worst day", "max"]):
+    if any(w in msg for w in ["biggest day", "most expensive day", "highest day", "worst day", "max day"]):
         if big_day:
             return (
                 f"Your biggest spending day in the last 30 days was **{big_day}**.\n\n"
-                f"Check the Spending Analyzer for a day-by-day breakdown. "
-                f"Your overall biggest category is **{top_cat}** at ${top_amt:,.2f}."
+                f"For a day-by-day chart, check the Spending Analyzer. "
+                f"Your top overall category is **{top_cat}** at ${top_amt:,.2f}."
             )
 
-    # ── Generic thoughtful fallback ───────────────────────────────────────
+    # ── Did I spend on X? / specific merchant lookup ──────────────────────
+    if merchants:
+        for m in merchants:
+            if m["name"].lower() in msg:
+                return (
+                    f"Yes — you've visited **{m['name']}** **{m['visits']} times** this month, "
+                    f"spending a total of **${m['total']:,.2f}** there."
+                )
+
+    # ── Generic fallback with data snapshot ───────────────────────────────
     pct_top = top_amt / spent * 100 if spent > 0 else 0
     return (
-        f"Based on your last 30 days of transactions:\n\n"
-        f"💰 You've spent **${spent:,.2f}** across {tx_count} transactions\n"
+        f"Here's what I see from your last 30 days:\n\n"
+        f"💰 Spent **${spent:,.2f}** across {tx_count} transactions\n"
         f"📊 Daily average: **${avg:.2f}/day**\n"
-        f"📈 Biggest category: **{top_cat}** (${top_amt:,.2f}, {pct_top:.0f}% of total)\n"
+        f"📈 Top category: **{top_cat}** (${top_amt:,.2f}, {pct_top:.0f}%)\n"
         f"{'✅' if net >= 0 else '⚠️'} Net cash flow: **${net:,.2f}**\n\n"
-        f"Some things I can help with:\n"
+        f"Try asking:\n"
         f"• \"Where am I spending the most?\"\n"
-        f"• \"Give me savings tips\"\n"
-        f"• \"What's my daily average?\"\n"
-        f"• \"Am I over budget?\"\n"
-        f"• \"Show me my top merchants\""
+        f"• \"Am I saving money?\"\n"
+        f"• \"What are my subscriptions?\"\n"
+        f"• \"Give me savings tips\""
     )
 
 
