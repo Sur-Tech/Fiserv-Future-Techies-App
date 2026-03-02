@@ -226,14 +226,8 @@
             <button class="action-btn" onclick="window.location='spending-analyzer.html'">&#128202; Monthly Report</button>
             <button class="action-btn" onclick="GroceryApp.openStores()">&#128205; Find Stores Nearby</button>
         </div>
-    </main>
-    <footer>
-        <p>&copy; 2026 <strong>Domus</strong> &mdash; Fiserv Future Techies Challenge</p>
-    </footer>
 
-    <!-- ══════════════════════════════════════════
-         ADD ITEM MODAL
-    ══════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════ ADD ITEM MODAL ═══════════════════════════════════ -->
     <div id="add-item-modal" class="modal-overlay" onclick="if(event.target===this)GroceryApp.closeAddItem()">
         <div class="modal-card">
             <div class="modal-header">
@@ -275,9 +269,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
-         REORDER LAST TRIP MODAL
-    ══════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════ REORDER MODAL ═══════════════════════════════════ -->
     <div id="reorder-modal" class="modal-overlay" onclick="if(event.target===this)GroceryApp.closeReorder()">
         <div class="modal-card">
             <div class="modal-header">
@@ -291,9 +283,7 @@
                 <button class="modal-close-btn" onclick="GroceryApp.closeReorder()">✕</button>
             </div>
             <div class="modal-body" id="reorder-body" style="max-height:360px;overflow-y:auto">
-                <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">
-                    Select items to add back to your current shopping list:
-                </p>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Select items to add back to your current shopping list:</p>
                 <div id="reorder-items"></div>
             </div>
             <div class="modal-success-screen" id="reorder-success" style="display:none">
@@ -308,9 +298,7 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
-         FIND STORES NEARBY MODAL
-    ══════════════════════════════════════════ -->
+    <!-- ═══════════════════════════════════ STORES MODAL ════════════════════════════════════ -->
     <div id="stores-modal" class="modal-overlay" onclick="if(event.target===this)GroceryApp.closeStores()">
         <div class="modal-card" style="max-width:500px">
             <div class="modal-header">
@@ -327,255 +315,11 @@
         </div>
     </div>
 
-    <!-- ══════════════════════════════════════════
-         GROCERY APP LOGIC
-    ══════════════════════════════════════════ -->
-    <script>
-    const GroceryApp = {
-        _nextId: 19,
+    </main>
+    <footer>
+        <p>&copy; 2026 <strong>Domus</strong> &mdash; Fiserv Future Techies Challenge</p>
+    </footer>
 
-        _esc(s) {
-            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        },
 
-        // ─── ADD ITEM ─────────────────────────────────────────────────────────
-        openAddItem() {
-            document.getElementById('ai-name').value  = '';
-            document.getElementById('ai-qty').value   = '';
-            document.getElementById('ai-price').value = '';
-            document.getElementById('ai-name').style.borderColor = '';
-            document.getElementById('ai-success').style.display  = 'none';
-            document.getElementById('ai-form-body').style.display = '';
-            document.getElementById('ai-footer').style.display    = 'flex';
-            document.getElementById('add-item-modal').classList.add('open');
-            setTimeout(() => document.getElementById('ai-name').focus(), 120);
-        },
-
-        closeAddItem() {
-            document.getElementById('add-item-modal').classList.remove('open');
-        },
-
-        submitAddItem() {
-            const nameEl = document.getElementById('ai-name');
-            const name   = nameEl.value.trim();
-            if (!name) {
-                nameEl.style.borderColor = 'var(--orange)';
-                nameEl.focus();
-                return;
-            }
-            const qty   = document.getElementById('ai-qty').value.trim()   || '1';
-            const price = parseFloat(document.getElementById('ai-price').value) || 0;
-            const priceTxt = price > 0 ? `$${price.toFixed(2)}` : '—';
-            const id = `g${this._nextId++}`;
-
-            // Build new list row
-            const el = document.createElement('div');
-            el.className = 'check-item';
-            el.innerHTML = `
-                <input type="checkbox" id="${id}" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)">
-                <label class="check-label" for="${id}">${this._esc(name)} <span class="check-qty">${this._esc(qty)}</span></label>
-                <span class="check-price">${priceTxt}</span>`;
-
-            // Append after last check-item in the first content-card
-            const items = document.querySelectorAll('.content-card .check-item');
-            if (items.length) items[items.length - 1].after(el);
-
-            // Update "Items on List" counter
-            const counter = document.querySelector('.stat-card.navy .stat-value');
-            if (counter) counter.textContent = parseInt(counter.textContent || '0') + 1;
-
-            // Show success screen
-            document.getElementById('ai-added-name').textContent = name;
-            document.getElementById('ai-form-body').style.display = 'none';
-            document.getElementById('ai-footer').style.display    = 'none';
-            document.getElementById('ai-success').style.display   = 'block';
-
-            showToast(`✅ "${name}" added to your shopping list!`, 'success');
-            setTimeout(() => this.closeAddItem(), 1800);
-        },
-
-        // ─── SHARE LIST ───────────────────────────────────────────────────────
-        shareList() {
-            const date = new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
-            const lines = [`📋 Domus Shopping List — ${date}`, ''];
-            let picked = 0, total = 0;
-
-            document.querySelectorAll('.content-card .check-item').forEach(item => {
-                const done  = item.classList.contains('check-done');
-                const label = item.querySelector('.check-label');
-                const qty   = item.querySelector('.check-qty');
-                const price = item.querySelector('.check-price');
-                const name  = label ? label.childNodes[0].textContent.trim() : '?';
-                const q     = qty   ? qty.textContent.trim()   : '';
-                const p     = price ? price.textContent.trim() : '';
-                lines.push(`${done ? '✓' : '○'} ${name}${q ? ` (${q})` : ''} — ${p}`);
-                if (done) picked++;
-                total++;
-            });
-
-            lines.push('', `${picked} of ${total} items picked up`);
-            lines.push('Shared via Domus 🏠');
-
-            if (!navigator.clipboard) {
-                showToast('Clipboard not available in this browser', 'error');
-                return;
-            }
-            navigator.clipboard.writeText(lines.join('\n'))
-                .then(() => showToast(`📋 Shopping list copied! ${total} items ready to paste anywhere.`, 'success'))
-                .catch(() => showToast('Could not copy — try manually selecting the list', 'error'));
-        },
-
-        // ─── REORDER LAST TRIP ────────────────────────────────────────────────
-        _lastTrip: [
-            { name: 'Organic Whole Milk',   qty: '1 gal',    price: '$5.99' },
-            { name: 'Large Eggs',           qty: '1 doz',    price: '$4.29' },
-            { name: 'Greek Yogurt',         qty: '3 pack',   price: '$6.49' },
-            { name: 'Whole Wheat Bread',    qty: '1 loaf',   price: '$3.79' },
-            { name: 'Baby Spinach',         qty: '5 oz bag', price: '$3.49' },
-            { name: 'Gala Apples',          qty: '3 lb bag', price: '$5.49' },
-            { name: 'Orange Juice',         qty: '64 oz',    price: '$5.79' },
-            { name: 'Brown Rice',           qty: '2 lb bag', price: '$3.29' },
-            { name: 'Penne Pasta',          qty: '3 boxes',  price: '$3.99' },
-            { name: 'Fresh Blueberries',    qty: '1 pint',   price: '$4.49' },
-            { name: 'Roma Tomatoes',        qty: '4 ct',     price: '$2.49' },
-            { name: 'Sharp Cheddar',        qty: '8 oz',     price: '$4.99' },
-        ],
-
-        openReorder() {
-            const c = document.getElementById('reorder-items');
-            c.innerHTML = this._lastTrip.map((item, i) => `
-                <div class="reorder-row">
-                    <input type="checkbox" id="rt${i}" checked>
-                    <label class="reorder-label" for="rt${i}">${this._esc(item.name)}</label>
-                    <span class="reorder-qty">${this._esc(item.qty)}</span>
-                    <span class="reorder-price">${this._esc(item.price)}</span>
-                </div>`).join('');
-
-            document.getElementById('reorder-success').style.display = 'none';
-            document.getElementById('reorder-body').style.display    = '';
-            document.getElementById('reorder-footer').style.display  = 'flex';
-            document.getElementById('reorder-modal').classList.add('open');
-        },
-
-        closeReorder() {
-            document.getElementById('reorder-modal').classList.remove('open');
-        },
-
-        submitReorder() {
-            const checked = [...document.querySelectorAll('#reorder-items input:checked')];
-            if (!checked.length) {
-                showToast('Select at least one item to add', 'info');
-                return;
-            }
-
-            const items = document.querySelectorAll('.content-card .check-item');
-            const lastItem = items[items.length - 1];
-
-            checked.forEach(cb => {
-                const idx  = parseInt(cb.id.replace('rt', ''));
-                const trip = this._lastTrip[idx];
-                const id   = `g${this._nextId++}`;
-                const el   = document.createElement('div');
-                el.className = 'check-item';
-                el.innerHTML = `
-                    <input type="checkbox" id="${id}" onchange="this.closest('.check-item').classList.toggle('check-done',this.checked)">
-                    <label class="check-label" for="${id}">${this._esc(trip.name)} <span class="check-qty">${this._esc(trip.qty)}</span></label>
-                    <span class="check-price">${this._esc(trip.price)}</span>`;
-                if (lastItem) lastItem.after(el);
-            });
-
-            const counter = document.querySelector('.stat-card.navy .stat-value');
-            if (counter) counter.textContent = parseInt(counter.textContent || '0') + checked.length;
-
-            const n = checked.length;
-            document.getElementById('reorder-msg').textContent = `${n} item${n !== 1 ? 's' : ''} added to your list`;
-            document.getElementById('reorder-body').style.display   = 'none';
-            document.getElementById('reorder-footer').style.display = 'none';
-            document.getElementById('reorder-success').style.display = 'block';
-
-            showToast(`🛒 ${n} item${n !== 1 ? 's' : ''} from last trip added to your list!`, 'success');
-            setTimeout(() => this.closeReorder(), 2200);
-        },
-
-        // ─── FIND STORES NEARBY ───────────────────────────────────────────────
-        _stores: [
-            {
-                name: 'Walmart Supercenter', dist: '0.8 mi', addr: '1234 Market Blvd',
-                hours: 'Open until 11:00 PM', open: true, badge: '💰 Cheapest for your list',
-                deals: [
-                    { e: '🍗', t: 'Chicken Breast — $3.97/lb (Save $2.00)' },
-                    { e: '🥛', t: 'Great Value Whole Milk — $3.48/gal' },
-                    { e: '🍞', t: 'Nature\'s Own Bread — $2.98 (was $4.29)' },
-                ]
-            },
-            {
-                name: 'Trader Joe\'s', dist: '1.2 mi', addr: '567 Oak Street',
-                hours: 'Open until 9:00 PM', open: true, badge: '⭐ Best quality-to-price',
-                deals: [
-                    { e: '🥑', t: 'Organic Avocados — 4 for $3.99' },
-                    { e: '🫐', t: 'Organic Blueberries — $3.49/pint' },
-                    { e: '🧀', t: 'Unexpected Cheddar — $4.99/8 oz block' },
-                ]
-            },
-            {
-                name: 'Target', dist: '1.6 mi', addr: '890 Pine Avenue',
-                hours: 'Open until 10:00 PM', open: true, badge: null,
-                deals: [
-                    { e: '🎯', t: 'RedCard holders save 5% on everything' },
-                    { e: '🥚', t: 'Good & Gather Eggs — $3.79/doz (RedCard price)' },
-                    { e: '🫒', t: 'EVOO 16 oz — $6.99 (was $9.99)' },
-                ]
-            },
-            {
-                name: 'Whole Foods Market', dist: '2.1 mi', addr: '321 Elm Drive',
-                hours: 'Open until 9:00 PM', open: true, badge: null,
-                deals: [
-                    { e: '🐟', t: 'Wild Atlantic Salmon — $11.99/lb (Prime)' },
-                    { e: '🌿', t: '365 Baby Spinach 5 oz — $2.99 (Prime)' },
-                    { e: '🧃', t: 'Organic OJ 64 oz — $4.99 (Prime price)' },
-                ]
-            },
-            {
-                name: 'Kroger', dist: '2.4 mi', addr: '654 Maple Lane',
-                hours: 'Open until 10:00 PM', open: true, badge: null,
-                deals: [
-                    { e: '🍗', t: 'Kroger Chicken Breast — $2.99/lb (Kroger Card)' },
-                    { e: '🥣', t: 'Greek Yogurt Variety 3-pk — $5.49' },
-                    { e: '🍚', t: 'Kroger Brown Rice 2 lb — $2.49' },
-                ]
-            },
-        ],
-
-        openStores() {
-            document.getElementById('stores-list').innerHTML = this._stores.map(s => `
-                <div class="store-card">
-                    <div class="store-card-top">
-                        <div>
-                            <div class="store-name">${this._esc(s.name)}</div>
-                            <div class="store-meta">📍 ${this._esc(s.dist)} &nbsp;·&nbsp; ${this._esc(s.addr)}</div>
-                            <div class="store-hours ${s.open ? 'store-open' : 'store-closed'}">
-                                🕐 ${this._esc(s.hours)}
-                            </div>
-                        </div>
-                        ${s.badge ? `<span class="store-badge">${this._esc(s.badge)}</span>` : ''}
-                    </div>
-                    <div class="store-deals-label">🔖 Today's deals</div>
-                    ${s.deals.map(d => `<div class="store-deal-row">${d.e} ${this._esc(d.t)}</div>`).join('')}
-                    <button class="store-dir-btn" onclick="GroceryApp._directions('${this._esc(s.name)}')">
-                        📍 Get Directions to ${this._esc(s.name)}
-                    </button>
-                </div>`).join('');
-            document.getElementById('stores-modal').classList.add('open');
-        },
-
-        closeStores() {
-            document.getElementById('stores-modal').classList.remove('open');
-        },
-
-        _directions(name) {
-            showToast(`📍 Opening directions to ${name}…`, 'info');
-        }
-    };
-    </script>
 </body>
 </html>

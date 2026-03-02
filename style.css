@@ -1967,3 +1967,91 @@ footer strong {
     60%       { transform: translateX(-4px); }
     80%       { transform: translateX(4px); }
 }
+
+/* =============================================
+   GROCERY APP — modal + store card styles
+   (shared between SPA context and standalone)
+   ============================================= */
+.modal-footer {
+    padding: 14px 24px 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--gray-100);
+}
+.modal-cancel-btn {
+    padding: 10px 18px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--gray-700);
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: background 0.15s;
+}
+.modal-cancel-btn:hover { background: var(--gray-100); }
+.modal-action-btn {
+    padding: 10px 22px;
+    background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: opacity 0.15s;
+}
+.modal-action-btn:hover { opacity: 0.88; }
+
+/* Store cards */
+.store-card { border-bottom: 1px solid var(--gray-100); padding: 18px 24px; }
+.store-card:last-child { border-bottom: none; }
+.store-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.store-name  { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+.store-meta  { font-size: 12px; color: var(--gray-500); margin-top: 3px; }
+.store-hours { font-size: 12px; margin-top: 3px; font-weight: 500; }
+.store-open  { color: #059669; }
+.store-closed{ color: #DC2626; }
+.store-badge {
+    background: linear-gradient(135deg, var(--orange), var(--orange-light));
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px; white-space: nowrap;
+    flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.4px;
+}
+.store-deals-label { font-size: 11px; font-weight: 700; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.store-deal-row    { font-size: 13px; color: var(--text-dark); padding: 2px 0; line-height: 1.5; }
+.store-dir-btn {
+    width: 100%; padding: 9px;
+    background: transparent; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 600;
+    color: var(--navy); cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: all 0.15s; margin-top: 12px;
+}
+.store-dir-btn:hover { background: var(--navy); color: white; border-color: var(--navy); }
+
+/* Reorder item rows */
+.reorder-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--gray-100); font-size: 14px; color: var(--text-dark); }
+.reorder-row:last-child { border-bottom: none; }
+.reorder-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--orange); cursor: pointer; flex-shrink: 0; }
+.reorder-label { flex: 1; font-weight: 500; }
+.reorder-qty   { font-size: 11px; color: var(--gray-500); background: var(--gray-100); padding: 2px 8px; border-radius: 12px; }
+.reorder-price { font-size: 13px; font-weight: 600; color: var(--gray-700); min-width: 44px; text-align: right; }
+
+/* Modal success screen */
+.modal-success-screen { text-align: center; padding: 28px 24px 24px; }
+.modal-success-icon   { font-size: 46px; margin-bottom: 12px; }
+.modal-success-title  { font-size: 17px; font-weight: 700; color: var(--text-dark); margin-bottom: 6px; }
+.modal-success-sub    { font-size: 13px; color: var(--gray-500); }
+
+/* Dark mode overrides */
+[data-theme="dark"] .modal-cancel-btn  { border-color: #2D3748; color: #C9D1D9; }
+[data-theme="dark"] .modal-cancel-btn:hover { background: #21262D; }
+[data-theme="dark"] .modal-footer      { border-top-color: #21262D; }
+[data-theme="dark"] .store-card        { border-bottom-color: #21262D; }
+[data-theme="dark"] .reorder-row       { border-bottom-color: #21262D; }
+[data-theme="dark"] .store-dir-btn     { border-color: #2D3748; color: #C9D1D9; }
+[data-theme="dark"] .store-dir-btn:hover { background: var(--navy-mid); color: white; border-color: var(--navy-mid); }
+[data-theme="dark"] .reorder-qty       { background: #21262D; }
